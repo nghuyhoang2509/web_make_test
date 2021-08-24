@@ -46,5 +46,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:4200"
+  "proxy": "https://web-tfo-demo.herokuapp.com"
 }
