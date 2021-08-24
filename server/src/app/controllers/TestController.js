@@ -78,6 +78,7 @@ class TestController {
             var data = await Test.findById(id)
             if (data.userId !== req.body.data.userId) {
                 data.answers = []
+                var answers = []
             }else{
                 var answer = await Answer.findOne({ testId: data._id })
             }  
