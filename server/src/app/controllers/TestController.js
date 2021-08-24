@@ -78,11 +78,11 @@ class TestController {
             var data = await Test.findById(id)
             if (data.userId !== req.body.data.userId) {
                 data.answers = []
-                var answers = []
             }else{
                 var answer = await Answer.findOne({ testId: data._id })
+                return res.json({ success: true, message: "lấy dữ liệu thành công", data, reponseAnswers: answer.answers })
             }  
-            return res.json({ success: true, message: "lấy dữ liệu thành công", data, reponseAnswers: answer.answers })
+            return res.json({ success: true, message: "lấy dữ liệu thành công", data, reponseAnswers: []})
         } catch (error) {
             return res.status(403).json({ success: false, message: error })
         }
