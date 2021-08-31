@@ -16,8 +16,6 @@ const loginReducer = (state = defaultReducer, action) => {
             }
         }
         case "LoginSuccess":{
-            localStorage.setItem("access-token", action.payload.accessToken)
-            localStorage.setItem("refresh-token", action.payload.refreshToken)
             return {
                 loginLoading: false,
                 loginStatus: "",
@@ -51,13 +49,25 @@ const loginReducer = (state = defaultReducer, action) => {
                 loginLoading: false,
             }
         }
-        case "Logout":{
-            localStorage.removeItem("access-token")
-            localStorage.removeItem("refresh-token")
+        case "LogoutRequest":{
             return{
                 ...state,
+                loginLoading: true
+            }
+        }
+        case "LogoutSuccess":{
+            return{
+                ...state,
+                loginLoading: false,
                 isLogined: false,
-                info: null,
+                info: null
+            }
+        }
+        case "LogoutFail":{
+            alert('có lỗi')
+            return{
+                ...state,
+                loginLoading: false
             }
         }
         default:

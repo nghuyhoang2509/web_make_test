@@ -24,16 +24,15 @@ class AuthController {
 
                 const accessToken = await jwtUtil.generateToken({ username: user.username }, accessTokenSecret, tokenLife)
                 const refreshToken = await jwtUtil.generateToken({ username: user.username }, accessRefreshSecret, refreshTokenLife)
-              
+                res.cookie('access', accessToken, { signed: true })
+                res.cookie('refresh', refreshToken, { signed: true })
                 return res.json({
                     success: true,
                     message: 'Đăng nhập thành công',
                     info: {
                         username: user.username,
                         id: user._id
-                    },
-                    accessToken,
-                    refreshToken,
+                    }
                 })
             })
             .catch(error => { console.log(error) })
@@ -56,25 +55,22 @@ class AuthController {
             .catch(() => res.json({ success: false, message: 'Tên đăng nhập đã tồn tại' }))
     }
 
-    //[GET] /auth/refresh-token/
+    //[GET] /auth/logout
     //Public
-    async refreshToken(req, res, next) {
-        const accessRefreshSecret = process.env.secretRefresh
-        const tokenLife = process.env.tokenLife
-        const accessTokenSecret = process.env.secret
-
+    async logout(req, res, next) {
         try {
-            const decoded = await jwtUtil.verifyToken(req.signedCookies['auth-refresh-token'], accessRefreshSecret)
-            const accessToken = await jwtUtil.generateToken({ username: decoded.username }, accessTokenSecret, tokenLife)
-            req.signedCookies['auth-token'] = accessToken
-            return res.json({ success: true, message: 'refresh token thành công' })
+            req.session.destroy()
+            res.clearCookie("access", { path:'/' })
+            res.clearCookie("refresh", { path:'/' })
+            return res.json({ success: true, message: "logout thành công" })
         }
         catch (error) {
             console.log(error)
-            return res.status(400).json({ success: false, message: 'refresh token thất bại' })
+            return res.status(500).json({ success: false, message: error })
         }
     }
 
+    
     //[GET] /auth
     //public
     async auth(req, res, next) {
@@ -82,8 +78,9 @@ class AuthController {
         const accessRefreshSecret = process.env.secretRefresh
         const refreshTokenLife = process.env.tokenRefreshLife
         const tokenLife = process.env.tokenLife
-        const tokenFromClient = req.headers.accesstoken
-        const tokenRefreshFromClient = req.headers.refreshtoken
+        const tokenFromClient = req.signedCookies['access']
+        const tokenRefreshFromClient = req.signedCookies['refresh']
+
         if (tokenFromClient && tokenRefreshFromClient) {
             try {
                 const refreshDecoded = await jwtUtil.verifyToken(tokenRefreshFromClient, accessRefreshSecret, { ignoreExpiration: true })
@@ -94,8 +91,11 @@ class AuthController {
                 const decoded = await jwtUtil.verifyToken(tokenFromClient, accessTokenSecret, { ignoreExpiration: true })
                 if (decoded.exp < expNow) {
                     const accessToken = await jwtUtil.generateToken({ username: decoded.data.username }, accessTokenSecret, tokenLife)
+                    const refreshToken = await jwtUtil.generateToken({ username: decoded.data.username }, accessRefreshSecret, refreshTokenLife)
+                    res.cookie('refresh', refreshToken, { signed: true })
+                    res.cookie('access', accessToken, { signed: true })
                 }
-                const user = await User.findOne({username: decoded.data.username})
+                const user = await User.findOne({ username: decoded.data.username })
                 return res.json({
                     success: true,
                     message: "đăng nhập thành công",
@@ -111,8 +111,8 @@ class AuthController {
 
         } else {
             // Không tìm thấy token trong request
-           /*  res.clearCookie('auth-token')
-            res.clearCookie('auth-refresh-token') */
+            /*  res.clearCookie('auth-token')
+             res.clearCookie('auth-refresh-token') */
             return res.json({ success: false, message: "không tìm thấy hoặc token không hợp lệ" })
         }
     }

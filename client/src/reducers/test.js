@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid"
 
 const defaultReducer = {
     loading: false,
@@ -9,7 +8,8 @@ const defaultReducer = {
         skipPage: 0
     },
     pauseLoadTest: false,
-    exam: null
+    exam: null,
+    responseAnswer: []
 }
 
 const testReducer = (state = defaultReducer, action) => {
@@ -87,7 +87,6 @@ const testReducer = (state = defaultReducer, action) => {
                 ...state,
                 loading: false,
                 exam: action.payload.data.data,
-                responseAnswers: action.payload.data.reponseAnswers
             }
         }
         case "GetTestFail": {
@@ -103,7 +102,6 @@ const testReducer = (state = defaultReducer, action) => {
                 exam: {
                     ...state.exam,
                     questions: [...state.exam.questions, {
-                        id: uuidv4(),
                         title: "Câu hỏi mới",
                         options: [],
                         type: "radio"
@@ -112,20 +110,14 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "CreateOption": {
-            const questions = state.exam.questions.map((question) => {
-                if (question.id === action.payload.id) {
-                    question = {
-                        ...question,
-                        options: [...question.options, "trống"]
-                    }
-                }
-                return question
-            })
+            const { indexQuestion } = action.payload
+            const questions = state.exam.questions
+            questions[indexQuestion].options.push("trống")
             return {
                 ...state,
                 exam: {
                     ...state.exam,
-                    questions: questions
+                    questions
                 }
             }
         }
@@ -164,7 +156,6 @@ const testReducer = (state = defaultReducer, action) => {
         case "UpdateTestSuccess": {
             return {
                 ...state,
-                exam: action.payload.data.data
             }
         }
         case "UpdateTestFail": {
@@ -216,11 +207,12 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "AnswerSuccess": {
-            alert("Nộp thành công")
+            const responseAnswer = state.responseAnswer.map((item)=> item)
+            responseAnswer.unshift(action.payload.data.data)
             return {
                 ...state,
                 loading: false,
-
+                responseAnswer
             }
         }
         case "AnswerFail": {
@@ -230,6 +222,32 @@ const testReducer = (state = defaultReducer, action) => {
                 loading: false,
             }
         }
+        case "ChangeSetting": {
+            const { key, value } = action.payload
+                state.exam.settings[key] = value
+            return {
+                ...state,
+            }
+        }
+        case "GetResponseRequest": {
+            return {
+                ...state,
+            }
+        }
+
+        case "GetResponseSuccess": {
+            return {
+                ...state,
+                responseAnswer: action.payload.data.data
+            }
+        }
+        case "GetResponseFail": {
+            alert('có lỗi xãy ra')
+            return {
+                ...state,
+            }
+        }
+        
         default:
             return state
     }

@@ -103,6 +103,10 @@ a{
   font-weight: 600;
 }
 
+.text-500{
+  font-weight: 500;
+}
+
 .font-24px{
   font-size: 24px;
 }
@@ -271,6 +275,7 @@ a{
 
 .exam-title{
   outline-color: #0d6efd;
+  color: crimson;
   padding: 5px;
 }
 
@@ -389,4 +394,17 @@ a{
 .response-title{
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   padding: 20px 0;
+}
+
+/* setting */
+.nav-test-setting{
+  color: black!important;
+  background-color: #f7fcfc!important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1)!important;
+}
+
+.nav-test-setting.active{
+  border-left: 3px solid #0d6efd;
+  background-color: white!important;
+  font-weight: 500;
 }

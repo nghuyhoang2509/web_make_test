@@ -9,11 +9,14 @@ router.post('/create',testController.create)
 
 router.patch('/update',testController.update)
 
+router.post('/response',testController.response)
+
 router.patch('/answer',testController.answer)
 
 router.post('/delete',testController.delete)
 
 router.post('/get',testController.test)
+
 
 
 module.exports = router

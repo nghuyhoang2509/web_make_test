@@ -39,8 +39,20 @@ export function verifyAuthFail(error){
     }
 }
 
-export function logout(){
+export function logoutRequest(){
     return {
-        type: "Logout"
+        type: "LogoutRequest"
+    }
+}
+
+export function logoutSuccess(){
+    return {
+        type: "LogoutSuccess"
+    }
+}
+
+export function logoutFail(){
+    return {
+        type: "LogoutFail"
     }
 }

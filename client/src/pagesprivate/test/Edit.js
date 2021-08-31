@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { Link } from "react-router-dom"
 import { connect } from "react-redux";
 
 import {
@@ -13,10 +12,13 @@ import {
     updateOption,
     updateAnswer,
     deleteOption,
-    deleteQuestion
+    deleteQuestion,
 } from '../../actions/test';
-import { Form, Tabs, Tab, Table } from "react-bootstrap"
+import { Form, Tabs, Tab } from "react-bootstrap"
 import Loading from "../../components/Loading";
+import Setting from "./Setting"
+import Response from "./Response"
+import Moment from "react-moment"
 
 
 const Edit = (props) => {
@@ -26,7 +28,8 @@ const Edit = (props) => {
         if (!props.loading) {
             props.getTestRequest({
                 id,
-                userId: props.user.id
+                userId: props.user.id,
+                edit: true
             })
         }
         return () => {
@@ -44,20 +47,25 @@ const Edit = (props) => {
                             {props.exam ?
                                 <>
                                     <Tabs activeKey={key} onSelect={(k) => setKey(k)}>
-                                        <Tab eventKey="edit" title="Đề thi">
+                                        <Tab eventKey="edit" title="Đề thi" tabClassName="text-600">
                                             <div className="exam select-none">
-                                                <h3 suppressContentEditableWarning="true" className="exam-title" contentEditable="true" onBlur={(e) => props.updateExam({ title: e.target.innerText })}>{props.exam.title.toUpperCase()}</h3>
-                                                <i>{props.exam.createdAt}</i>
-                                                <p suppressContentEditableWarning="true" className="exam-description" onBlur={(e) => props.updateExam({ description: e.target.innerText })} contentEditable="true">{props.exam.description ? props.exam.description : <>Chưa có mô tả</>}</p>
+                                                <div style={{ borderTop: "5px solid black", padding: "5px", borderRadius: "10px", boxShadow: "0 0 2px 1px rgba(0,0,0,0.3)" }} onBlur={() => props.updateTestRequest()}>
+                                                    <i><Moment format="hh:mm:ss DD/MM/YYYY">{props.exam.createdAt}</Moment></i>
+                                                    <h3 suppressContentEditableWarning="true" className="exam-title" contentEditable="true" onBlur={(e) => props.updateExam({ title: e.target.innerText })}>{props.exam.title.toUpperCase()}</h3>
+                                                    <p suppressContentEditableWarning="true" className="exam-description" onBlur={(e) => props.updateExam({ description: e.target.innerText })} contentEditable="true">{props.exam.description ? props.exam.description : <>Chưa có mô tả</>}</p>
+                                                </div>
                                                 <Form className="mt-4 exam-questions">
                                                     {props.exam.questions.length > 0
                                                         ?
                                                         <>
                                                             {props.exam.questions.map((question, indexQuestion) =>
-                                                                <Form.Group className="exam-question" key={question.id} onBlur={(e) => props.updateAnswer({
-                                                                    indexQuestion,
-                                                                    value: e.target.value
-                                                                })
+                                                                <Form.Group className="exam-question" key={indexQuestion} onChange={(e) => {
+                                                                    props.updateAnswer({
+                                                                        indexQuestion,
+                                                                        value: e.target.value
+                                                                    })
+                                                                    props.updateTestRequest()
+                                                                }
 
                                                                 }>
                                                                     <Form.Label suppressContentEditableWarning="true" className="exam-question-title" contentEditable="true" onBlur={(e) => {
@@ -68,27 +76,31 @@ const Edit = (props) => {
                                                                         })
                                                                     }}> {question.title}</Form.Label>
                                                                     {question.options.map((option, index) =>
-                                                                        <div className="d-flex align-items-center exam-question-group" key={`g${question.id}.${index}`}>
-                                                                            {props.exam.answers[indexQuestion] === index.toString()
-                                                                                ? <>
-                                                                                    <Form.Check className="exam-option me-2" value={index} type={question.type} name={question.id} key={index} id={`${question.id}.${index}`} defaultChecked></Form.Check></>
-                                                                                :
-                                                                                <>
-                                                                                    <Form.Check className="exam-option me-2" value={index} type={question.type} name={question.id} key={index} id={`${question.id}.${index}`}></Form.Check></>
-                                                                            }
-                                                                            <Form.Label suppressContentEditableWarning="true" contentEditable="true" className="flex-1 mb-0 exam-option-label" key={`n${index}`} onBlur={(e) => props.updateOption({
-                                                                                index,
-                                                                                indexQuestion,
-                                                                                value: e.target.innerText
-                                                                            })}>{option}</Form.Label>
-                                                                            <span className="material-icons-outlined exam-option-delete" onClick={(e) => props.deleteOption({
-                                                                                indexQuestion,
-                                                                                index
-                                                                            })}>clear</span>
+                                                                        <div className="d-flex align-items-center exam-question-group" key={index}>
+                                                                            <Form.Check className="exam-option me-2" value={`${indexQuestion}.${index}`} type={question.type} name={indexQuestion} id={index} defaultChecked={props.exam.answers[indexQuestion] === `${indexQuestion}.${index}` ? true : false} />
+                                                                            <Form.Label suppressContentEditableWarning="true" contentEditable="true" className="flex-1 mb-0 exam-option-label"
+                                                                                onBlur={(e) => {
+                                                                                    props.updateOption({
+                                                                                        index,
+                                                                                        indexQuestion,
+                                                                                        value: e.target.innerText
+                                                                                    })
+                                                                                    props.updateTestRequest()
+                                                                                }}>{option}</Form.Label>
+                                                                            <span className="material-icons-outlined exam-option-delete" onClick={() => {
+                                                                                props.deleteOption({
+                                                                                    indexQuestion,
+                                                                                    index
+                                                                                })
+                                                                                props.updateTestRequest()
+                                                                            }}>clear</span>
                                                                         </div>)}
-                                                                    <span className="mt-1 material-icons exam-add-option" onClick={(e) => props.createOption({ id: question.id })}>control_point</span>
+                                                                    <span className="mt-1 material-icons exam-add-option" onClick={() => props.createOption({ indexQuestion })}>control_point</span>
                                                                     <div className="exam-question-tool">
-                                                                        <span className="material-icons exam-question-tool-item" onClick={(e) => props.deleteQuestion({ indexQuestion })}>delete_outlined</span>
+                                                                        <span className="material-icons exam-question-tool-item" onClick={() => {
+                                                                            props.deleteQuestion({ indexQuestion })
+                                                                            props.updateTestRequest()
+                                                                        }}>delete_outlined</span>
                                                                     </div>
 
                                                                 </Form.Group>)}
@@ -102,41 +114,17 @@ const Edit = (props) => {
                                                     <span className="material-icons-outlined">add_box</span>
                                                     <span className="d-none d-md-block">Thêm câu hỏi</span>
                                                 </div>
-                                                <Link to={"/admin/test/exam/" + id} className="test-tools-btn">
-                                                    <span className="material-icons-outlined">library_books</span>
-                                                    <span className="d-none d-md-block">Xem đề thi</span>
-                                                </Link>
-                                                <div className="test-tools-btn" onClick={() => props.updateTestRequest()}>
-                                                    <span className="material-icons-outlined">save</span>
-                                                    <span className="d-none d-md-block">Lưu đề thi</span>
-                                                </div>
-                                                <div className="test-tools-btn" onClick={() => {alert(`${window.location.host}/admin/test/exam/${id}`)}}>
+                                                <div className="test-tools-btn" onClick={() => { alert(`${window.location.host}/admin/test/exam/${id}`) }}>
                                                     <span className="material-icons-outlined">link</span>
                                                     <span className="d-none d-md-block">Lấy liên kết đề</span>
                                                 </div>
                                             </div>
                                         </Tab>
-                                        <Tab eventKey="responseAnswers" title="Phản hồi">
-                                            <div className="response">
-                                                <h3 className="response-title">{props.responseAnswers.length} phản hồi</h3>
-                                                <Table striped bordered hover>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Time</th>
-                                                            <th>Username</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {props.responseAnswers.map((answer, index) => 
-                                                        <tr>
-                                                            <td>{index}</td>
-                                                            <td>{answer.date}</td>
-                                                            <td>{answer.info.username}</td>
-                                                        </tr>)}
-                                                    </tbody>
-                                                </Table>
-                                            </div>
+                                        <Tab eventKey="responseAnswer" title="Phản hồi" tabClassName="text-600">
+                                            <Response />
+                                        </Tab>
+                                        <Tab eventKey="setting" title="Cài đặt" tabClassName="text-600">
+                                            <Setting settings={props.exam.settings} />
                                         </Tab>
                                     </Tabs>
 
@@ -156,7 +144,6 @@ function mapStateToProps(state) {
         exam: state.test.exam,
         loading: state.test.loading,
         user: state.login.info,
-        responseAnswers: state.test.responseAnswers
     }
 }
 
@@ -171,5 +158,5 @@ export default connect(mapStateToProps,
         updateOption,
         updateAnswer,
         deleteOption,
-        deleteQuestion
+        deleteQuestion,
     })(Edit)

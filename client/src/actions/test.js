@@ -194,3 +194,31 @@ export function answerFail(payload){
         payload
     }
 }
+
+export function changeSetting(payload){
+    return{
+        type: "ChangeSetting",
+        payload
+    }
+}
+
+export function getResponseRequest(payload){
+    return{
+        type: "GetResponseRequest",
+        payload
+    }
+}
+
+export function getResponseSuccess(payload){
+    return{
+        type: "GetResponseSuccess",
+        payload
+    }
+}
+
+export function getResponseFail(payload){
+    return{
+        type: "GetResponseFail",
+        payload
+    }
+}

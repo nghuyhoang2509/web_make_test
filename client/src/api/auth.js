@@ -1,19 +1,26 @@
 import instance from "./index";
 
-export function createUser(data){
-    return instance.post('auth/signup', data)
+export function createUser(data) {
+    return instance.post('auth/signup', data, {
+        withCredentials: true
+    })
 }
 
-export function login(data){
-    return instance.post('auth/login', data)
+export function login(data) {
+    return instance.post('auth/login', data, {
+        withCredentials: true
+    })
 }
 
-export function verifyAuth(){
-    return instance.post('auth',null,{
-        headers: {
-            accessToken: localStorage.getItem("access-token"), 
-            refreshToken: localStorage.getItem("refresh-token") 
-        }
+export function verifyAuth() {
+    return instance.get('auth', {
+        withCredentials: true
+    })
+}
+
+export function logout() {
+    return instance.get('auth/logout', {
+        withCredentials: true
     })
 }
 

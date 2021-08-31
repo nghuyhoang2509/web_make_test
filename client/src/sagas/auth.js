@@ -1,7 +1,7 @@
 import { call, put } from "@redux-saga/core/effects"
 import * as apiAuth from "../api/auth"
 import { createUserFail, createUserSuccess } from "../actions/signup"
-import { loginSuccess, loginFail, verifyAuthSuccess, verifyAuthFail } from "../actions/login"
+import { loginSuccess, loginFail, verifyAuthSuccess, verifyAuthFail, logoutSuccess, logoutFail } from "../actions/login"
 
 export function* signup(action){
     try{
@@ -40,5 +40,14 @@ export function* verifyAuth(){
         }
     }catch(error){
         console.log(error)
+    }
+}
+
+export function* logout(){
+    try{
+        yield call(apiAuth.logout)
+        yield put(logoutSuccess())
+    }catch(error){
+        yield put(logoutFail())
     }
 }

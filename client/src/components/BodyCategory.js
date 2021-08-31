@@ -56,7 +56,7 @@ const BodyCategory = (props) => {
                                         <Card.Text className="description">
                                             {test.description}
                                         </Card.Text>
-                                        <Link to={"exam/" + test._id}>
+                                        <Link to={"edit/" + test._id}>
                                             <Button variant="primary" size="lg" className="w-100">Mở</Button>
                                         </Link>
                                     </Card.Body>

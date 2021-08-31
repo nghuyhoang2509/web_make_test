@@ -33,12 +33,12 @@ const CanvasHeader = (props) => {
                         </Link>}</Offcanvas.Title>
                 </Offcanvas.Header>
                 <Offcanvas.Body className="border-top-dark">
-                    <Link to="/tools" className="text-decoration-none me-auto text-dark font-weight-bold font-size-larger my-16px opacity-6" onClick={handleClose}>
-                        Công cụ
+                    <Link to="/admin/test/category" className="text-decoration-none me-auto text-dark font-weight-bold font-size-larger my-16px opacity-6" onClick={handleClose}>
+                        Kho Đề thi
                     </Link>
                     {props.infoUser
                         ?
-                        <div className="text-decoration-none cursor-pointer font-weight-bold font-size-larger my-16px opacity-6" onClick={() => props.logout()}>
+                        <div className="text-decoration-none cursor-pointer font-weight-bold font-size-larger my-16px opacity-6" onClick={() => props.logoutRequest()}>
                             Đăng xuất
                         </div>
                         :

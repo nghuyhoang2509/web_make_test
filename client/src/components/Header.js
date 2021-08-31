@@ -2,7 +2,7 @@ import React from 'react';
 import { Navbar, Container, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { connect } from "react-redux"
-import { logout } from "../actions/login"
+import { logoutRequest } from "../actions/login"
 
 import CanvasHeader from "./CanvasHeader"
 
@@ -16,17 +16,17 @@ const Header = (props) => {
                             TFO
                         </Navbar.Brand>
                     </Link>
-                    <Nav className="flex-1 d-none d-md-flex">
-                        <Link to="/tools" className="text-decoration-none nav-link me-auto">
-                            Công cụ
-                        </Link>
+                    <Link to="/admin/test/category" className="text-decoration-none nav-link me-auto">
+                        Kho Đề thi
+                    </Link>
+                    <Nav className="flex-1 d-none d-md-flex justify-content-end">
                         {props.infoUser ?
                             <>
                                 <Link to="/profile" className="text-decoration-none nav-link d-flex align-items-center border-right-white">
                                     <span className="material-icons">person</span>
                                     {props.infoUser.username}
                                 </Link>
-                                <div className="text-decoration-none nav-link d-flex align-items-center cursor-pointer" onClick={() => props.logout()}>
+                                <div className="text-decoration-none nav-link d-flex align-items-center cursor-pointer" onClick={() => props.logoutRequest()}>
                                     Đăng xuất
                                 </div>
                             </> : <>
@@ -38,11 +38,11 @@ const Header = (props) => {
                                 </Link>
                             </>}
                     </Nav>
-                    <CanvasHeader {...props}/>
+                    <CanvasHeader {...props} />
                 </Container>
             </Navbar>
         </>
     )
 }
 
-export default connect(null, { logout })(Header)
+export default connect(null, { logoutRequest })(Header)

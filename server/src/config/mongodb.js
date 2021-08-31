@@ -6,7 +6,7 @@ async function connect(){
             useCreateIndex: true,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            useFindAndModify: true,
+            useFindAndModify: false,
         })
         console.log('db success')
     }catch(error){

@@ -36,3 +36,9 @@ export function answerTest(data){
         ...data
     })
 }
+
+export function responseTest(data){
+    return instance.post("/admin/test/response",{
+        data
+    })
+}

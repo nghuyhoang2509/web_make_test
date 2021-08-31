@@ -10,11 +10,14 @@ import Loading from "./components/Loading";
 import Home from './pages/Home';
 import Header from './components/Header';
 import Login from "./pages/Login";
-import Tools from "./pages/Tools";
 import Signup from "./pages/Signup";
 import Test from "./pagesprivate/test/Test";
+import Exam from "./pagesprivate/test/Exam"
+
 
 import { verifyAuthRequest } from "./actions/login";
+
+import 'moment-timezone'
 
 
 
@@ -30,22 +33,22 @@ function App(props) {
       {props.loginState.loginLoading ? <Loading /> :
         <>
           <Router>
-            <Header infoUser={props.loginState.info} />
             <Switch>
-              <Route path="/tools" exact>
-                <Tools />
-              </Route>
               <Route path="/login" exact>
                 {props.loginState.isLogined ? <Redirect to="/"></Redirect> : <Login />}
               </Route>
               <Route path="/signup" exact>
                 {props.loginState.isLogined ? <Redirect to="/"></Redirect> : <Signup />}
-
+              </Route>
+              <Route path="/exam/:id">
+                <Exam></Exam>
               </Route>
               <Route path="/admin/test">
+              <Header infoUser={props.loginState.info} />
                 <Test />
               </Route>
               <Route path="**">
+              <Header infoUser={props.loginState.info} />
                 <Home />
               </Route>
             </Switch>

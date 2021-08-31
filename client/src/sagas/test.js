@@ -13,8 +13,11 @@ import {
     updateTestFail,
     reloadTestResponse,
     answerSuccess,
-    answerFail
+    answerFail,
+    getResponseSuccess,
+    getResponseFail
 } from "../actions/test"
+
 
 export function* createTest(action) {
     try {
@@ -88,4 +91,13 @@ export function* answerTest(action) {
 
 export function* reloadTest(action) {
     yield put(reloadTestResponse())
+}
+
+export function* responseTest(action) {
+    try {
+        const data = yield call(apiTest.responseTest,action.payload)
+        yield put(getResponseSuccess(data))
+    } catch (error) {
+        yield put(getResponseFail(error))
+    }
 }

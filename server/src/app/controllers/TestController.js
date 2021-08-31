@@ -1,7 +1,7 @@
 const Test = require("../../model/Test")
 const User = require("../../model/User")
 const Answer = require("../../model/Answer")
-
+const moment = require("moment")
 class TestController {
 
     //[POST] /admin/test/category/
@@ -30,17 +30,18 @@ class TestController {
         try {
             const test = req.body.test
             const id = req.body.id
-            const testNew = await Test.create({
+            var testNew = await Test.create({
                 ...test,
                 userId: id,
-                questions: [],
-                answers: []
             })
-            await Answer.create({
-                answers: [],
+            const answers = await Answer.create({
                 testId: testNew._id,
                 userId: id
             })
+            testNew.answersId = answers._id
+            answers.testId = testNew._id
+            testNew = await testNew.save()
+            await answers.save()
             return res.json({ success: true, message: "tạo dữ liệu thành công", data: testNew })
 
         }
@@ -54,16 +55,11 @@ class TestController {
     async update(req, res, next) {
         try {
             const test = req.body.test
-            const testOld = await Test.findById(test._id)
-            if (!testOld) {
+            const testUpdate = await Test.findByIdAndUpdate(test._id, test, { new: true })
+            if (!testUpdate) {
                 return res.status(403).json({ success: false, message: error })
             }
-            testOld.title = test.title
-            testOld.description = test.description
-            testOld.questions = test.questions
-            testOld.answers = test.answers
-            const testUpdated = await testOld.save()
-            return res.json({ success: true, message: "cập nhật dữ liệu thành công", data: testUpdated })
+            return res.json({ success: true, message: "cập nhật dữ liệu thành công", data: testUpdate })
         } catch (error) {
             console.log(error)
             return res.status(403).json({ success: false, message: error })
@@ -74,16 +70,44 @@ class TestController {
     // private
     async test(req, res, next) {
         try {
-            const id = req.body.data.id
+            const { id, edit, userId } = req.body.data
             var data = await Test.findById(id)
-            if (data.userId !== req.body.data.userId) {
-                data.answers = []
-            }else{
-                var answer = await Answer.findOne({ testId: data._id })
-                return res.json({ success: true, message: "lấy dữ liệu thành công", data, reponseAnswers: answer.answers })
-            }  
-            return res.json({ success: true, message: "lấy dữ liệu thành công", data, reponseAnswers: []})
+            if (data) {
+                if (edit && userId === data.userId) {
+
+                } else {
+                    data.answers = []
+                }
+                return res.json({ success: true, message: "lấy dữ liệu thành công", data })
+            } else {
+                return res.status(403).json({ success: false, message: "" })
+            }
+
         } catch (error) {
+            console.log(error)
+            return res.status(403).json({ success: false, message: error })
+        }
+    }
+
+    async response(req, res, next) {
+        try {
+            const { testId, userId } = req.body.data
+            var answer = await Answer.findOne({ testId })
+            var response = []
+            if (answer) {
+                if (userId) {
+                    answer.answers.forEach((item) => {
+                        if (item.info.id === userId) {
+                            response.push(item)
+                        }
+                    })
+                } else {
+                    response = answer.answers
+                }
+            }
+            return res.json({ success: true, message: "lấy dữ liệu thành công", data: response })
+        } catch (error) {
+            console.log(error)
             return res.status(403).json({ success: false, message: error })
         }
     }
@@ -104,16 +128,40 @@ class TestController {
     //[PATCH] /admin/test/answer 
     async answer(req, res, next) {
         try {
-            const { info, answer, testId } = req.body
-            const data = await Answer.findOne({ testId })
+            var response
+            const { info, answer, testId, startTime, finishTime } = req.body
+            const data = await Answer.findOne({ testId }).populate('testId', ['settings', 'answers'])
             data.answers.unshift({
                 info,
                 answer,
-                date: Date.now()
+                date: new Date().toISOString(),
+                mark: null,
+                timePractice: finishTime - startTime
             })
-            await data.save()
-            return res.json({ success: true, message: "Nộp thành công" })
+            const { answers } = data.testId
+            const answerFromClient = data.answers[0].answer
+            const { autoMark, displayResMark, ladderMark } = data.testId.settings
+            if (autoMark) {
+                answerFromClient.sort()
+                let answerTrue = 0
+                for (let i = 0; i < answerFromClient.length; i++) {
+                    if (answerFromClient[i] === answers[i]) {
+                        answerTrue++
+                    }
+                }
+                var mark = ladderMark / answerFromClient.length * answerTrue
+                if (isNaN(mark)) {
+                    mark = 0
+                }
+                data.answers[0].mark = mark.toFixed(2)
+                await data.save()
+                if (!displayResMark) {
+                    data.answers[0] = null
+                }
+            }
+            return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
         } catch (error) {
+            console.log(error)
             return res.status(403).json({ success: false, message: error })
         }
     }

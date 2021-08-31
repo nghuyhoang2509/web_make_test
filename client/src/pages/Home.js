@@ -12,7 +12,7 @@ const home = () => {
                     <hr className="my-4" />
                     <p>Bấm vào đây để bắt đầu tạo nhanh đề thi</p>
                     <p className="lead">
-                        <Link to="tools" className="btn btn-primary btn-lg" role="button">Tạo ngay</Link>
+                        <Link to="admin/test/category" className="btn btn-primary btn-lg" role="button">Tạo ngay</Link>
                     </p>
                 </div>
             </div>

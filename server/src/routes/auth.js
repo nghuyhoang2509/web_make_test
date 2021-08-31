@@ -5,11 +5,11 @@ const authController = require('../app/controllers/AuthController')
 
 router.post('/login',authController.login)
 
+router.get('/logout',authController.logout)
+
 router.post('/signup',authController.signup)
 
-router.post('/refresh-token',authController.refreshToken)
-
-router.post('/',authController.auth)
+router.get('/',authController.auth)
 
 
 module.exports = router

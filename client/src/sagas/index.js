@@ -1,6 +1,6 @@
 import { takeLatest, takeEvery } from "@redux-saga/core/effects";
-import { signup, login, verifyAuth } from "./auth";
-import { createTest, loadTest, deleteTest, getTest, updateTest, reloadTest, answerTest } from "./test";
+import { signup, login, verifyAuth, logout } from "./auth";
+import { createTest, loadTest, deleteTest, getTest, updateTest, reloadTest, answerTest, responseTest } from "./test";
 
 function* mySaga(){
     yield takeLatest("CreateUserRequest",signup)
@@ -13,6 +13,8 @@ function* mySaga(){
     yield takeLatest("UpdateTestRequest",updateTest)
     yield takeEvery("ReloadTestRequest",reloadTest)
     yield takeLatest("AnswerRequest",answerTest)
+    yield takeLatest("LogoutRequest",logout)
+    yield takeLatest("GetResponseRequest",responseTest)
 }
 
 export default mySaga
