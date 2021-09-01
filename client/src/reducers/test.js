@@ -159,7 +159,7 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "UpdateTestFail": {
-            alert("có lỗi xảy ra vui lòng thử lại")
+            alert("Đề thi không còn công khai")
             return {
                 ...state
             }

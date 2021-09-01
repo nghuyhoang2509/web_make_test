@@ -13,7 +13,9 @@ const TestSchema = new mongoose.Schema({
             displayResMark: false,
             ladderMark: 10,
             limitResponse: false,
-            limitTime: 0
+            limitTime: 0,
+            display: "public",
+            displayLimit: []
         }
     }
 }, { timestamps: true })

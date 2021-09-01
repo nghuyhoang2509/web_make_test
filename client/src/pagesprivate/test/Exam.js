@@ -39,9 +39,17 @@ const Exam = (props) => {
         if (props.exam?.settings?.limitTime) {
             setTimeEnd(props.exam?.settings?.limitTime * 60)
         }
-        return () => {
+        if (props.exam && start) {
+            window.addEventListener("beforeunload", doBeforeUnload)
         }
-    }, [props])
+        return () => {
+            window.removeEventListener("beforeunload", doBeforeUnload)
+        }// eslint-disable-next-line
+    }, [props, start])
+    function doBeforeUnload(ev) {
+        ev.preventDefault()
+        return ev.returnValue = true
+    }
     function sendAnswer() {
         props.answerRequest({ answer, testId: id, info: props.user, startTime, finishTime: Date.now() })
         setStart(false)

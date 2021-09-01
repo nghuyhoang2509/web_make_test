@@ -114,7 +114,7 @@ const Edit = (props) => {
                                                     <span className="material-icons-outlined">add_box</span>
                                                     <span className="d-none d-md-block">Thêm câu hỏi</span>
                                                 </div>
-                                                <div className="test-tools-btn" onClick={() => { alert(`${window.location.host}/admin/test/exam/${id}`) }}>
+                                                <div className="test-tools-btn" onClick={() => { alert(`${window.location.host}/exam/${id}`) }}>
                                                     <span className="material-icons-outlined">link</span>
                                                     <span className="d-none d-md-block">Lấy liên kết đề</span>
                                                 </div>
@@ -124,7 +124,7 @@ const Edit = (props) => {
                                             <Response />
                                         </Tab>
                                         <Tab eventKey="setting" title="Cài đặt" tabClassName="text-600">
-                                            <Setting settings={props.exam.settings} />
+                                            <Setting/>
                                         </Tab>
                                     </Tabs>
 

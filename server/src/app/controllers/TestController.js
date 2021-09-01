@@ -72,20 +72,29 @@ class TestController {
         try {
             const { id, edit, userId } = req.body.data
             var data = await Test.findById(id)
-            if (data) {
-                if (edit && userId === data.userId) {
-
-                } else {
-                    data.answers = []
-                }
-                return res.json({ success: true, message: "lấy dữ liệu thành công", data })
-            } else {
-                return res.status(403).json({ success: false, message: "" })
+            if (!data) {
+                return res.status(403).json({ success: false, message: "Đề thi không tồn tại" })
             }
-
+            if (edit && userId === data.userId) {
+                return res.json({ success: true, message: "lấy dữ liệu thành công", data })
+            }
+            if (data.settings.display === "public") {
+                data.answers = []
+                return res.json({ success: true, message: "lấy dữ liệu thành công", data })
+            }
+            if (userId === data.userId) {
+                return res.json({ success: true, message: "lấy dữ liệu thành công", data })
+            }
+            if (data.settings.display === "time") {
+                const displayLimit = [new Date(data.settings.displayLimit[0]), new Date(data.settings.displayLimit[1])]
+                if (displayLimit[0].getTime() <= Date.now() && displayLimit[1].getTime() >= Date.now()) {
+                    return res.json({ success: true, message: "lấy dữ liệu thành công", data })
+                }
+            }
+            return res.status(403).json({ success: false, message: "đề thi đang ở chế độ riêng tư" })
         } catch (error) {
             console.log(error)
-            return res.status(403).json({ success: false, message: error })
+            return res.status(403).json({ success: false, message: "Đề thi không tồn tại" })
         }
     }
 
@@ -140,7 +149,7 @@ class TestController {
             })
             const { answers } = data.testId
             const answerFromClient = data.answers[0].answer
-            const { autoMark, displayResMark, ladderMark } = data.testId.settings
+            const { autoMark, displayResMark, ladderMark, displayLimit, display } = data.testId.settings
             if (autoMark) {
                 answerFromClient.sort()
                 let answerTrue = 0
@@ -154,12 +163,22 @@ class TestController {
                     mark = 0
                 }
                 data.answers[0].mark = mark.toFixed(2)
-                await data.save()
                 if (!displayResMark) {
                     data.answers[0] = null
                 }
             }
-            return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
+            if (display === "public") {
+                await data.save()
+                return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
+            }
+            if (display === "time") {
+                const displayLimitNew = [new Date(displayLimit[0]), new Date(displayLimit[1])]
+                if (displayLimitNew[0].getTime() <= Date.now() && displayLimitNew[1].getTime() >= Date.now()) {
+                    await data.save()
+                    return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
+                }
+            }
+            return res.status(403).json({ success: false, message: error })
         } catch (error) {
             console.log(error)
             return res.status(403).json({ success: false, message: error })

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Row, Col, Tab, Nav, Form, Button } from "react-bootstrap";
 import { changeSetting, updateTestRequest } from '../../actions/test';
 import { connect } from "react-redux"
+import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars"
 
 
 const formSetting = {
@@ -21,14 +22,24 @@ const buttonSave = {
     float: "right"
 }
 
+const dateTimePicker = {
+    width: "200px",
+    margin: "20px"
+}
+
 const Setting = ({ settings, changeSetting, updateTestRequest }) => {
     const [autoMark, setAutoMark] = useState(settings.autoMark)
+    const [display, setDisplay] = useState(settings.display)
+    const [timeLimit, setTimeLimit] = useState(settings.displayLimit)
     return (
         <>
-            <Tab.Container id="left-tabs-example" defaultActiveKey="first" >
+            <Tab.Container id="left-tabs-example" defaultActiveKey="settingGeneral" >
                 <Row className="py-4">
                     <Col sm={3} className="" >
                         <Nav variant="pills" className="flex-column" style={{ border: "1px solid rgba(0,0,0,0.1)", borderRadius: "3px" }}>
+                            <Nav.Item>
+                                <Nav.Link eventKey="settingGeneral" className="nav-test-setting">Cài đặt chung</Nav.Link>
+                            </Nav.Item>
                             <Nav.Item>
                                 <Nav.Link eventKey="resAnswer" className="nav-test-setting">Phản hồi</Nav.Link>
                             </Nav.Item>
@@ -39,6 +50,43 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                     </Col>
                     <Col sm={9} style={{ backgroundColor: "#f7fcfc" }}>
                         <Tab.Content className="mt-4 mt-md-0">
+                            <Tab.Pane eventKey="settingGeneral">
+                                <h4>Cài đặt chung</h4>
+                                <i></i>
+                                <Form style={formSetting}>
+                                    <Form.Group>
+                                        <Form.Label>Hiển thị</Form.Label>
+                                        <Form.Select defaultValue={settings.display} onChange={(e) => {
+                                            changeSetting({
+                                                key: "display",
+                                                value: e.target.value
+                                            })
+                                            setDisplay(e.target.value)
+                                        }}>
+                                            <option value="public">Công khai</option>
+                                            <option value="private">Riêng tư</option>
+                                            <option value="time">Cài đặt thời gian</option>
+                                        </Form.Select>
+                                        <Form.Group style={dateTimePicker} className={display === "time" ? "d-block" : "d-none"}>
+                                            <DateTimePickerComponent strictMode={true} min={new Date()} value={timeLimit[0]} onChange={(e) => {
+                                                changeSetting({
+                                                    key: "displayLimit",
+                                                    value: [e.target.value, timeLimit[1]]
+                                                })
+                                                setTimeLimit([e.target.value, timeLimit[1]])
+                                            }} format="dd/MM/yyyy hh:mm" step="15" placeholder="Từ"></DateTimePickerComponent>
+                                            <DateTimePickerComponent strictMode={true} min={new Date(timeLimit[0])} value={timeLimit[1]} onChange={(e) => {
+                                                changeSetting({
+                                                    key: "displayLimit",
+                                                    value: [timeLimit[0], e.target.value]
+                                                })
+                                                setTimeLimit([timeLimit[0], e.target.value])
+                                            }} format="dd/MM/yyyy hh:mm" step="15" placeholder="Đến"></DateTimePickerComponent>
+                                        </Form.Group>
+                                    </Form.Group>
+                                </Form>
+                                <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
+                            </Tab.Pane>
                             <Tab.Pane eventKey="resAnswer">
                                 <h4>Phản hồi</h4>
                                 <i>Thiết lập khi phản hồi đề</i>
@@ -51,7 +99,10 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                         setAutoMark(e.target.checked)
                                     }} />
                                     <Form.Label className="my-2">Thang điểm</Form.Label>
-                                    <Form.Select defaultValue={settings.ladderMark} disabled={!autoMark}>
+                                    <Form.Select defaultValue={settings.ladderMark} disabled={!autoMark} onChange={(e) => changeSetting({
+                                        key: "ladderMark",
+                                        value: Number(e.target.value)
+                                    })}>
                                         <option value="1">
                                             1
                                         </option>
@@ -118,8 +169,8 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                         }></Form.Control>
                                     <Form.Label className="mb-0">phút</Form.Label>
                                     <Form.Text className="d-block">Nếu bạn không muốn giới hạn thời gian thì hãy nhập số 0 vào</Form.Text>
-                                    <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
                                 </Form>
+                                <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
                             </Tab.Pane>
                         </Tab.Content>
                     </Col>
@@ -129,5 +180,10 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
     )
 }
 
+function mapStateToProps(state) {
+    return {
+        settings: state.test.exam.settings
+    }
+}
 
-export default connect(null, { changeSetting, updateTestRequest })(Setting)
+export default connect(mapStateToProps, { changeSetting, updateTestRequest })(Setting)
