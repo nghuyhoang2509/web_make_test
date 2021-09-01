@@ -85,6 +85,16 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                         </Form.Group>
                                     </Form.Group>
                                 </Form>
+                                <Form style={formSetting}>
+                                    <Form.Group>
+                                        <Form.Check type="checkbox" style={itemSetting} label="Xáo trộn thứ tự câu hỏi và câu trả lời" defaultChecked={settings.randomExam} onChange={(e) => {
+                                            changeSetting({
+                                                key: "randomExam",
+                                                value: e.target.checked
+                                            })
+                                        }} />
+                                    </Form.Group>
+                                </Form>
                                 <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
                             </Tab.Pane>
                             <Tab.Pane eventKey="resAnswer">

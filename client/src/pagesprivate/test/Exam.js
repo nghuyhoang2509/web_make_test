@@ -56,6 +56,15 @@ const Exam = (props) => {
         setAnswer([])
     }
     var [answer, setAnswer] = useState([])
+    function shuffleArray(array) {
+        if (props.exam.settings.randomExam) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        return array
+    }
     return (
         <Container className="py-4">
             {start === true
@@ -81,15 +90,15 @@ const Exam = (props) => {
                                             {props.exam.questions.length
                                                 ?
                                                 <>
-                                                    {props.exam.questions?.map((question, indexQuestion) =>
+                                                    {shuffleArray(props.exam.questions?.map((question, indexQuestion) =>
                                                         <Form.Group className="exam-question" key={indexQuestion} onChange={(e) => answer[indexQuestion] = e.target.value}>
                                                             <Form.Label className="exam-question-title"> {question.title}</Form.Label>
-                                                            {question.options?.map((option, index) =>
+                                                            {shuffleArray(question.options?.map((option, index) =>
                                                                 <div className="d-flex align-items-center" key={index}>
                                                                     <Form.Check className="exam-option me-2" value={`${indexQuestion}.${index}`} type={question.type} name={indexQuestion} id={`${indexQuestion}.${index}`}></Form.Check>
                                                                     <Form.Label className="flex-1 mb-0 exam-option-label" htmlFor={`${indexQuestion}.${index}`} >{option}</Form.Label>
-                                                                </div>)}
-                                                        </Form.Group>)}
+                                                                </div>))}
+                                                        </Form.Group>))}
                                                     <Button type="submit">Gửi bài</Button>
                                                 </>
                                                 : <>Chưa tạo câu hỏi nào</>

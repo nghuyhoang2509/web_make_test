@@ -15,7 +15,8 @@ const TestSchema = new mongoose.Schema({
             limitResponse: false,
             limitTime: 0,
             display: "public",
-            displayLimit: []
+            displayLimit: [],
+            randomExam: false
         }
     }
 }, { timestamps: true })
