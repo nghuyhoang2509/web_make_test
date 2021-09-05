@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Form, Button, Container } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 import { connect } from "react-redux"
 import { createUserRequest } from "../actions/signup"
+import { toastMsgRequest } from '../actions/site'
 
 const Signup = (props) => {
     var [formUser, setFormUser] = useState({
@@ -52,7 +52,7 @@ const Signup = (props) => {
     function submitForm(e) {
         e.preventDefault()
         if (props.signupState.signupLoading === true) {
-            alert('Hãy đợi tài khoản tạo xong')
+            props.toastMsgRequest({ msg: "Hãy đợi tài khoản tạo xong", status: "error" })
         } else {
             if (errorUsername === "" && errorPassword === "" && errorPasswordCof === "") {
                 props.createUserRequest(formUser)
@@ -65,7 +65,7 @@ const Signup = (props) => {
                 setErrorUsername(null)
                 setErrorPasswordCof(null)
             } else {
-                alert('Bạn vui lòng nhập thông tin hợp lệ hoặc đợi tài khoản tạo xong')
+                props.toastMsgRequest({ msg: "Vui lòng nhập thông tn hợp lệ", status: "error" })
             }
         }
     }
@@ -97,7 +97,7 @@ const Signup = (props) => {
                     <Button variant="primary" type="submit" className="btn-submit" onClick={(e) => submitForm(e)}>
                         Đăng ký
                     </Button>
-                    <p className="mt-4">Nếu đã có tài khoản bấm vào đây. <Link to="/login">Đăng nhập</Link></p>
+                    <p className="mt-4">Nếu đã có tài khoản bấm vào đây. <span style={{ color: "#4285f4" }} onClick={(e)=> { e.preventDefault(); props.setType("login")}}>Đăng nhập</span></p>
                     <p className="text-600">{props.signupState.signupStatus}</p>
                 </Form>
             </Container>
@@ -112,4 +112,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps, { createUserRequest })(Signup)
+export default connect(mapStateToProps, { createUserRequest, toastMsgRequest })(Signup)

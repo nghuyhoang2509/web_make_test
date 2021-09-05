@@ -13,15 +13,17 @@ import {
     updateAnswer,
     deleteOption,
     deleteQuestion,
-} from '../../actions/test';
-import { Form, Tabs, Tab } from "react-bootstrap"
-import Loading from "../../components/Loading";
-import Setting from "./Setting"
-import Response from "./Response"
+    movePositionQuestion
+} from '../actions/test';
+import { Form, Tabs, Tab, Dropdown } from "react-bootstrap"
+import Loading from "../components/Loading";
+import Setting from "../pagesprivate/test/Setting"
+import Response from "../pagesprivate/test/Response"
 import Moment from "react-moment"
 
 
 const Edit = (props) => {
+    const [questionMove, setQuestionMove] = useState(null)
     const [key, setKey] = useState('edit')
     const { id } = useParams()
     useEffect(() => {
@@ -60,6 +62,7 @@ const Edit = (props) => {
                                                         <>
                                                             {props.exam.questions.map((question, indexQuestion) =>
                                                                 <Form.Group className="exam-question" key={indexQuestion} onChange={(e) => {
+
                                                                     props.updateAnswer({
                                                                         indexQuestion,
                                                                         value: e.target.value
@@ -77,7 +80,7 @@ const Edit = (props) => {
                                                                     }}> {question.title}</Form.Label>
                                                                     {question.options.map((option, index) =>
                                                                         <div className="d-flex align-items-center exam-question-group" key={index}>
-                                                                            <Form.Check className="exam-option me-2" value={`${indexQuestion}.${index}`} type={question.type} name={indexQuestion} id={index} defaultChecked={props.exam.answers[indexQuestion] === `${indexQuestion}.${index}` ? true : false} />
+                                                                            <Form.Check className="exam-option me-2 mt-0" value={`${index}`} type={question.type} name={indexQuestion} defaultChecked={props.exam.answers[indexQuestion] === `${index}` ? true : false} />
                                                                             <Form.Label suppressContentEditableWarning="true" contentEditable="true" className="flex-1 mb-0 exam-option-label"
                                                                                 onBlur={(e) => {
                                                                                     props.updateOption({
@@ -118,13 +121,50 @@ const Edit = (props) => {
                                                     <span className="material-icons-outlined">link</span>
                                                     <span className="d-none d-md-block">Lấy liên kết đề</span>
                                                 </div>
+                                                <Dropdown className="test-tools-btn" autoClose="outside">
+                                                    <Dropdown.Toggle childBsPrefix bsPrefix="test-tools-btn-move test-tools-btn">
+                                                        <span className="material-icons-outlined">open_with</span>
+                                                        <span className="d-none d-md-block">Di chuyển</span>
+                                                    </Dropdown.Toggle>
+                                                    <Dropdown.Menu>
+                                                        <Dropdown.Header className="d-flex" style={{ justifyContent: "space-between", cursor: "text" }} >
+                                                            <span style={{ color: "black" }}>
+                                                                {questionMove || questionMove === 0 ? "Di chuyển tới câu" : "Chọn câu cần di chuyển"}
+                                                            </span>
+                                                            {questionMove || questionMove === 0
+                                                                ?
+                                                                <span style={{ cursor: "pointer" }} onClick={() => setQuestionMove(null)}>
+                                                                    Hoàn tác
+                                                                </span>
+                                                                : <></>}
+                                                        </Dropdown.Header>
+                                                        <Dropdown.Divider />
+                                                        {props.exam.questions.map((question, indexQuestion) =>
+                                                            <Dropdown.Item key={indexQuestion}
+                                                                active={indexQuestion === questionMove ? true : false}
+                                                                onClick={() => {
+                                                                    if (questionMove !== null) { 
+                                                                        props.movePositionQuestion({ indexQuestionFrom: questionMove, indexQuestionTo: indexQuestion }) 
+                                                                        props.updateTestRequest()
+                                                                        setQuestionMove(null)
+                                                                    }
+                                                                    else {
+                                                                        setQuestionMove(indexQuestion)
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {question.title}
+                                                            </Dropdown.Item>
+                                                        )}
+                                                    </Dropdown.Menu>
+                                                </Dropdown>
                                             </div>
                                         </Tab>
                                         <Tab eventKey="responseAnswer" title="Phản hồi" tabClassName="text-600">
                                             <Response />
                                         </Tab>
                                         <Tab eventKey="setting" title="Cài đặt" tabClassName="text-600">
-                                            <Setting/>
+                                            <Setting />
                                         </Tab>
                                     </Tabs>
 
@@ -159,4 +199,5 @@ export default connect(mapStateToProps,
         updateAnswer,
         deleteOption,
         deleteQuestion,
+        movePositionQuestion,
     })(Edit)

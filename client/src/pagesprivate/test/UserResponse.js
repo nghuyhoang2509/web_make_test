@@ -3,10 +3,12 @@ import { Table } from "react-bootstrap"
 import { getResponseRequest } from '../../actions/test'
 import { connect } from "react-redux"
 import Moment from "react-moment"
+import moment from 'moment'
 
 
 const UserResponse = ({ responseAnswers, userId, testId, getResponseRequest }) => {
     useEffect(() => {
+        if (!responseAnswers.length)
         getResponseRequest({ testId, userId })
         return () => {
         }// eslint-disable-next-line
@@ -28,7 +30,7 @@ const UserResponse = ({ responseAnswers, userId, testId, getResponseRequest }) =
                             <td>{index}</td>
                             <td><Moment format="HH:mm:ss DD-MM-YYYY">{answer.date}</Moment></td>
                             <td>{answer.mark}</td>
-                            <td>{`${Math.round(answer.timePractice / 60000)} phút ${Math.round((answer.timePractice % 60000)/1000)} giây`}</td>
+                            <td>{moment.utc(answer.timePractice).format("HH:mm:ss")}</td>
                         </tr>)}
                 </tbody>
             </Table>

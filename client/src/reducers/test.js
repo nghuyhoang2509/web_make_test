@@ -2,14 +2,10 @@
 const defaultReducer = {
     loading: false,
     loadingTest: false,
-    testLoaded: [],
-    page: {
-        limitPage: 9,
-        skipPage: 0
-    },
-    pauseLoadTest: false,
+    testLoaded: null,
     exam: null,
-    responseAnswer: []
+    responseAnswer: [],
+    responsePolling: false
 }
 
 const testReducer = (state = defaultReducer, action) => {
@@ -17,25 +13,20 @@ const testReducer = (state = defaultReducer, action) => {
         case "CreateTestRequest": {
             return {
                 ...state,
-                loading: true
+                loadingTest: true
             }
         }
         case "CreateTestSuccess": {
             return {
                 ...state,
-                loading: false,
-                page: {
-                    ...state.page,
-                    skipPage: state.page.skipPage + 1
-                },
+                loadingTest: false,
                 testLoaded: [action.payload.data, ...state.testLoaded]
             }
         }
         case "CreateTestFail": {
-            alert("có lỗi xãy ra vui lòng thử lại")
             return {
                 ...state,
-                loading: false,
+                loadingTest: false,
             }
         }
         case "LoadTestRequest": {
@@ -48,33 +39,35 @@ const testReducer = (state = defaultReducer, action) => {
             return {
                 ...state,
                 loadingTest: false,
-                testLoaded: [...state.testLoaded, ...action.payload.data.data],
-                page: {
-                    limitPage: 6,
-                    skipPage: action.payload.data.data.length + state.page.skipPage
-                }
+                testLoaded: action.payload.data.data,
             }
         }
         case "LoadTestFail": {
             return {
                 ...state,
                 loadingTest: false,
-                pauseLoadTest: true
             }
         }
         case "DeleteTestRequest": {
-            return state
+            return {
+                ...state,
+                loadingTest: true
+            }
+
         }
         case "DeleteTestSuccess": {
             const index = state.testLoaded.findIndex((test) => test._id === action.payload)
             return {
                 ...state,
-                testLoaded: [...state.testLoaded.slice(0, index), ...state.testLoaded.slice(index + 1, state.testLoaded.length)]
+                testLoaded: [...state.testLoaded.slice(0, index), ...state.testLoaded.slice(index + 1, state.testLoaded.length)],
+                loadingTest: false
             }
         }
         case "DeleteTestFail": {
-            alert('có lỗi xảy ra vui lòng thử lại')
-            return state
+            return {
+                state,
+                loadingTest: false
+            }
         }
         case "GetTestRequest": {
             return {
@@ -86,7 +79,7 @@ const testReducer = (state = defaultReducer, action) => {
             return {
                 ...state,
                 loading: false,
-                exam: action.payload.data.data,
+                exam: action.payload.data,
             }
         }
         case "GetTestFail": {
@@ -179,8 +172,8 @@ const testReducer = (state = defaultReducer, action) => {
         case "DeleteOption": {
             const { indexQuestion, index } = action.payload
             const questions = state.exam.questions
-            questions[indexQuestion].options.splice(index,1)
-            return{
+            questions[indexQuestion].options.splice(index, 1)
+            return {
                 ...state,
                 exam: {
                     ...state.exam,
@@ -190,11 +183,13 @@ const testReducer = (state = defaultReducer, action) => {
         }
         case "DeleteQuestion": {
             const { indexQuestion } = action.payload
+            console.log(indexQuestion)
             const questions = state.exam.questions
-            questions.splice(indexQuestion,1)
+            questions.splice(indexQuestion, 1)
+            state.exam.answers.splice(indexQuestion, 1)
             return {
                 ...state,
-                exam:{
+                exam: {
                     ...state.exam,
                     questions
                 }
@@ -207,7 +202,7 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "AnswerSuccess": {
-            const responseAnswer = state.responseAnswer.map((item)=> item)
+            const responseAnswer = state.responseAnswer.map((item) => item)
             responseAnswer.unshift(action.payload.data.data)
             return {
                 ...state,
@@ -224,7 +219,7 @@ const testReducer = (state = defaultReducer, action) => {
         }
         case "ChangeSetting": {
             const { key, value } = action.payload
-                state.exam.settings[key] = value
+            state.exam.settings[key] = value
             return {
                 ...state,
             }
@@ -232,13 +227,15 @@ const testReducer = (state = defaultReducer, action) => {
         case "GetResponseRequest": {
             return {
                 ...state,
+                responsePolling: false
             }
         }
 
         case "GetResponseSuccess": {
             return {
                 ...state,
-                responseAnswer: action.payload.data.data
+                responseAnswer: [...action.payload.data.data, ...state.responseAnswer],
+                responsePolling: true
             }
         }
         case "GetResponseFail": {
@@ -247,7 +244,20 @@ const testReducer = (state = defaultReducer, action) => {
                 ...state,
             }
         }
-        
+        case "MovePositionQuestion": {
+            const { indexQuestionFrom, indexQuestionTo } = action.payload
+            var { questions, answers } = state.exam
+            const questionMove = questions.splice(indexQuestionFrom, 1)
+            const answerMove = answers.splice(indexQuestionFrom, 1)
+            questions.splice(indexQuestionTo + 1, 0, ...questionMove)
+            answers.splice(indexQuestionTo + 1, 0, ...answerMove)
+            console.log(questions)
+            console.log(answers)
+            return {
+                ...state
+            }
+        }
+
         default:
             return state
     }

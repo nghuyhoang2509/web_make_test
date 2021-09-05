@@ -1,28 +1,22 @@
 const Test = require("../../model/Test")
 const User = require("../../model/User")
 const Answer = require("../../model/Answer")
-const moment = require("moment")
+/* const redisDB = require("../../config/redisDB") */
+var resPolling = {}
 class TestController {
 
     //[POST] /admin/test/category/
     //private
     async category(req, res, next) {
         try {
-            const page = req.body.page
             const user = req.body.info
-            var limitPage = page.limitPage
-            var skipPage = page.skipPage
-            if (page === "all") {
-                skipPage = 0
-                limitPage = 0
-            }
-            const test = await Test.find({ userId: user.id }).skip(skipPage).limit(limitPage).sort({ updatedAt: -1 })
+            const test = await Test.find({ userId: user.id }).sort({ updatedAt: -1 })
             if (test.length === 0) {
-                return res.status(403).json({ success: false, message: "không có dữ liệu" })
+                return res.json({ success: true, message: "không có dữ liệu" , data: []})
             }
             return res.json({ success: true, message: "lấy data thành công", data: test })
         } catch (error) {
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
     //[POST] /admin/test/create
@@ -46,7 +40,7 @@ class TestController {
 
         }
         catch (error) {
-            return res.status(402).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
 
@@ -57,12 +51,12 @@ class TestController {
             const test = req.body.test
             const testUpdate = await Test.findByIdAndUpdate(test._id, test, { new: true })
             if (!testUpdate) {
-                return res.status(403).json({ success: false, message: error })
+                return res.json({ success: false, message: error })
             }
             return res.json({ success: true, message: "cập nhật dữ liệu thành công", data: testUpdate })
         } catch (error) {
             console.log(error)
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
 
@@ -73,7 +67,7 @@ class TestController {
             const { id, edit, userId } = req.body.data
             var data = await Test.findById(id)
             if (!data) {
-                return res.status(403).json({ success: false, message: "Đề thi không tồn tại" })
+                return res.json({ success: false, message: "Đề thi không tồn tại" })
             }
             if (edit && userId === data.userId) {
                 return res.json({ success: true, message: "lấy dữ liệu thành công", data })
@@ -91,16 +85,16 @@ class TestController {
                     return res.json({ success: true, message: "lấy dữ liệu thành công", data })
                 }
             }
-            return res.status(403).json({ success: false, message: "đề thi đang ở chế độ riêng tư" })
+            return res.json({ success: false, message: "đề thi đang ở chế độ riêng tư" })
         } catch (error) {
             console.log(error)
-            return res.status(403).json({ success: false, message: "Đề thi không tồn tại" })
+            return res.json({ success: false, message: "Đề thi không tồn tại" })
         }
     }
 
     async response(req, res, next) {
         try {
-            const { testId, userId } = req.body.data
+            const { testId, userId, polling } = req.body.data
             var answer = await Answer.findOne({ testId })
             var response = []
             if (answer) {
@@ -114,13 +108,16 @@ class TestController {
                     response = answer.answers
                 }
             }
+            if (polling) {
+                /* redisDB.setex(testId, JSON.parser(res)) */
+                return resPolling[testId] = res
+            }
             return res.json({ success: true, message: "lấy dữ liệu thành công", data: response })
         } catch (error) {
             console.log(error)
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
-
 
     //[DELETE] /admin/test/delete
     //private
@@ -131,7 +128,7 @@ class TestController {
             await Answer.deleteOne({ testId: id })
             return res.json({ success: true, message: "xóa dữ liệu thành công" })
         } catch (error) {
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
     //[PATCH] /admin/test/answer 
@@ -151,7 +148,6 @@ class TestController {
             const answerFromClient = data.answers[0].answer
             const { autoMark, displayResMark, ladderMark, displayLimit, display } = data.testId.settings
             if (autoMark) {
-                answerFromClient.sort()
                 let answerTrue = 0
                 for (let i = 0; i < answerFromClient.length; i++) {
                     if (answerFromClient[i] === answers[i]) {
@@ -169,19 +165,29 @@ class TestController {
             }
             if (display === "public") {
                 await data.save()
+                if (resPolling[testId]) {
+                    resPolling[testId].json({ success: true, message: "Nộp thành công", data: [data.answers[0]] })
+                    resPolling[testId] = null
+                }
                 return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
             }
             if (display === "time") {
                 const displayLimitNew = [new Date(displayLimit[0]), new Date(displayLimit[1])]
                 if (displayLimitNew[0].getTime() <= Date.now() && displayLimitNew[1].getTime() >= Date.now()) {
                     await data.save()
+                    if (resPolling[testId]) {
+                        resPolling[testId].json({ success: true, message: "Nộp thành công", data: [data.answers[0]] })
+                        resPolling[testId] = null
+                    }
                     return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
+                } else {
+                    return res.json({ success: false, message: "Thời hạn nộp bài đã hết" })
                 }
             }
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: "Đề thi đã khóa" })
         } catch (error) {
             console.log(error)
-            return res.status(403).json({ success: false, message: error })
+            return res.json({ success: false, message: error })
         }
     }
 

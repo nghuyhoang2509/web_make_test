@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from "react-redux";
 import { createTestRequest } from '../actions/test';
-import { Form, Button, FormControl, Modal } from 'react-bootstrap';
+import { Form, Button, Modal } from 'react-bootstrap';
 const HeaderCategory = (props) => {
     const [test, setTest] = useState({
         title: "",
@@ -30,21 +30,12 @@ const HeaderCategory = (props) => {
     const handleShow = () => setShow(true)
     return (
         <>
-            <div className="row d-flex">
-                <Button variant="outline-dark" className="col-md-2 col-10 offset-1 order-2 order-md-1 offset-md-1 d-flex align-items-center justify-content-center" onClick={handleShow}>
+            <div className="row d-flex" style={{ backgroundColor: "white" }}>
+                <Button variant="outline-dark" className="col-md-2 col-10 d-flex align-items-center justify-content-center" onClick={handleShow}>
                     <span className="material-icons-outlined">
                         add
                     </span>
                 </Button>
-                <Form className="d-flex col-md-8 col-12 order-1 order-md-2 mb-3 mb-md-0 offset-md-0">
-                    <FormControl
-                        type="search"
-                        placeholder="Search"
-                        className="mr-2"
-                        aria-label="Search"
-                    />
-                    <Button variant="outline-success">Search</Button>
-                </Form>
             </div>
             <Modal
                 show={show}
@@ -74,7 +65,7 @@ const HeaderCategory = (props) => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
+                    <Button variant="secondary" onClick={handleClose} className="m-0">
                         Hủy
                     </Button>
                     <Button variant="primary" onClick={() => submitTest()}>Tạo</Button>

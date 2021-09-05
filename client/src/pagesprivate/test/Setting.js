@@ -155,7 +155,9 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                             value: e.target.checked
                                         })} />
                                 </Form>
-                                <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
+                                <Button style={buttonSave} onClick={() => {
+                                    updateTestRequest()
+                                }}>Lưu lại</Button>
                             </Tab.Pane>
                             <Tab.Pane eventKey="timeAnswer">
                                 <h4>Thời gian</h4>

@@ -27,7 +27,8 @@ const loginReducer = (state = defaultReducer, action) => {
             return {
                 ...state,
                 loginLoading: false,
-                loginStatus: action.error.message,
+                loginStatus: "",
+
             }
         }
         case "VerifyAuthRequest":{

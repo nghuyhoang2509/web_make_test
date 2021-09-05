@@ -222,3 +222,10 @@ export function getResponseFail(payload){
         payload
     }
 }
+
+export function movePositionQuestion(payload){
+    return {
+        type: "MovePositionQuestion",
+        payload
+    }
+}

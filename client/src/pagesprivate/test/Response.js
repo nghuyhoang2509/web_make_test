@@ -1,49 +1,74 @@
-import React, { useEffect } from 'react'
-import { Table } from 'react-bootstrap'
+import React, { useEffect, useState } from 'react'
+import { MDBDataTableV5 } from "mdbreact"
 import { connect } from "react-redux"
 import { getResponseRequest } from '../../actions/test'
-import Moment from "react-moment"
+import moment from 'moment'
 
-const Response = ({ responseAnswers, getResponseRequest, testId }) => {
+const Response = ({ responseAnswers, getResponseRequest, testId, responsePolling }) => {
+    const [dataTable, setDataTable] = useState({
+        columns: [
+            {
+                label: "Thời gian",
+                field: "time",
+                sort: "asc"
+            },
+            {
+                label: "Tên Đăng Nhập",
+                field: "username",
+            },
+            {
+                label: "Điểm",
+                field: "mark",
+            },
+            {
+                label: "Thời gian làm",
+                field: "timePractice",
+            },
+        ],
+        rows: []
+    })
     useEffect(() => {
-        getResponseRequest({ testId })
+        if (!responseAnswers.length) {
+            getResponseRequest({ testId })
+        }
         return () => {
         }//eslint-disable-next-line
-    },[])
+    }, [])
+    useEffect(() => {
+        if (responseAnswers.length) {
+            setDataTable({
+                ...dataTable, 
+                rows: responseAnswers.map((item) =>
+                ({
+                    time: moment(item.date).format("HH:mm:ss DD-MM-YYYY"),
+                    username: item.info.username,
+                    mark: item.mark,
+                    timePractice: moment.utc(item.timePractice).format("HH:mm:ss")
+                })
+                )
+            })
+        }//eslint-disable-next-line
+    }, [responseAnswers])
+    useEffect(() => {
+        if (responsePolling) {
+            getResponseRequest({ testId, polling: true })
+        }
+        //eslint-disable-next-line
+    }, [responsePolling])
     return (
         <div className="response">
             <h3 className="response-title">{responseAnswers.length} phản hồi</h3>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Time</th>
-                        <th>Username</th>
-                        <th>Mark</th>
-                        <th>TimePractice</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {responseAnswers.map((answer,indexAnswer) => 
-                        <tr key={indexAnswer}>
-                            <td>{indexAnswer}</td>
-                            <td><Moment format="HH:mm:ss DD-MM-YYYY">{answer.date}</Moment></td>
-                            <td>{answer.info.username}</td>
-                            <td>{answer.mark}</td>
-                            <td>{`${Math.round(answer.timePractice / 60000)} phút ${Math.round((answer.timePractice % 60000)/1000)} giây`}</td>
-                        </tr>
-                        )}
-                </tbody>
-            </Table>
+            <MDBDataTableV5 hover entriesOptions={[5, 20, 25]} entries={5} pagesAmount={4} data={dataTable} striped searchTop searchBottom={false}></MDBDataTableV5>
         </div>
     )
 }
 
-function mapStateToProps(state){
+function mapStateToProps(state) {
     return {
         responseAnswers: state.test.responseAnswer,
-        testId: state.test.exam._id
+        testId: state.test.exam._id,
+        responsePolling: state.test.responsePolling
     }
 }
 
-export default connect(mapStateToProps,{ getResponseRequest })(Response)
+export default connect(mapStateToProps, { getResponseRequest })(Response)

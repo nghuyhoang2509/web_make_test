@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { loadTestRequest, deleteTestRequest } from '../actions/test';
 import { Card, Button, Modal } from 'react-bootstrap';
 import { Link } from "react-router-dom"
-import Loading from "./Loading"
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton"
 
 const BodyCategory = (props) => {
     const [idTest, setIdTest] = useState("")
@@ -16,59 +16,58 @@ const BodyCategory = (props) => {
         setShow(false)
         setIdTest("")
     }
-    const [loadMore, setLoadMore] = useState(true)
+    
     useEffect(() => {
-        if (loadMore) {
+        if (props.testLoaded === null) {
             props.loadTestRequest()
-            setLoadMore(false)
-        }
-    }, [loadMore, props])
-    useEffect(() => {
-        if (!props.pauseLoadTest) {
-            window.addEventListener('scroll', loadTest)
         }
         return () => {
-            window.removeEventListener('scroll', loadTest)
-        }
-
-    }, [props.pauseLoadTest])
-    function loadTest(e) {
-        const root = document.querySelector('#root')
-        if (e.path[1].innerHeight + e.path[1].scrollY >= root.clientHeight - 200) {
-            setLoadMore(true)
-        }
-    }
+        }// eslint-disable-next-line
+    }, [])
     function deleteTest() {
         props.deleteTestRequest(idTest)
         handleClose()
     }
     return (
         <>
-            <div className="row mt-100px list-test-card">
-                {props.testLoaded.length
-                    ?
+            <div className="row mt-1 list-test-card" style={{ overflowY: "scroll", flex: "1" }}>
+                {props.loadingTest ?
+                    <SkeletonTheme color="#ffffff" highlightColor="#e2e5ea">
+                        <Skeleton count={4} height={"50%"} width={"50%"} className="mr-4"></Skeleton>
+                    </SkeletonTheme>
+                    :
                     <>
-                        {props.testLoaded.map((test) =>
-                            <div className="col d-flex justify-content-center my-4" key={test._id}>
-                                <Card style={{ width: '18rem' }} className="test-card" >
-                                    <Card.Body>
-                                        <Card.Title className="title">{test.title}</Card.Title>
-                                        <Card.Text className="description">
-                                            {test.description}
-                                        </Card.Text>
-                                        <Link to={"edit/" + test._id}>
-                                            <Button variant="primary" size="lg" className="w-100">Mở</Button>
-                                        </Link>
-                                    </Card.Body>
-                                    <span className="material-icons-outlined btn-delete" onClick={() => handleShow(test._id)}>
-                                        delete
-                                    </span>
-                                </Card>
-                            </div>)}
-                    </>
-                    : <h4>Bạn chưa có tài liệu nào</h4>
-                }
-                {props.loadingTest ? <Loading /> : <></>}
+                        {props.testLoaded
+                            ?
+                            <>
+                                 {props.testLoaded.map((test) =>
+                                    <div className="col-lg-4 col-md-6 col-sm-12 d-flex justify-content-center my-4" key={test._id}>
+                                        <Card style={{ width: '18rem' }} className="test-card" >
+                                            <Card.Body>
+                                                <Card.Title className="title">{test.title}</Card.Title>
+                                                <Card.Text className="description">
+                                                    {test.description}
+                                                </Card.Text>
+                                                <Link to={"edit/" + test._id}>
+                                                    <Button variant="primary" style={{ width: "100%" }} className="m-0">
+                                                        Mở
+                                                    </Button>
+                                                </Link>
+                                            </Card.Body>
+                                            <span className="material-icons-outlined btn-delete" onClick={() => handleShow(test._id)}>
+                                                delete
+                                            </span>
+                                        </Card>
+                                    </div>)}
+                            </>
+                            : <></>
+                        }
+                        {props.testLoaded?.length === 0 ?
+                            <div className="d-flex justify-content-center align-items-center" style={{ flexDirection: "column" }}>
+                                <img alt="error" src="icon/icons8-empty-box-64.png" />
+                                <h4 className="mt-4">Bạn chưa tạo đề nào</h4>
+                            </div> : <></>}
+                    </>}
             </div>
             <Modal
                 show={show}
