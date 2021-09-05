@@ -7,7 +7,7 @@ import NavBody from './NavBody'
 const HeaderMobile = (props) => {
     return (
         <>
-        <div style={{ position: "sticky", top: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", height: "50px", alignItems: "center"}}>
+        <div style={{ backgroundColor: "white", position: "sticky", top: 0, left: 0, right: 0, display: "flex", justifyContent: "space-between", height: "50px", alignItems: "center"}}>
             <Link to="/" >
                 {/* <img src="%PUBLIC_URL%/image/logoWeb.png"></img> */}
                 <h2 style={{ fontWeight: "700", marginBottom: "0", marginLeft: "10px" }}>TestMaker</h2>

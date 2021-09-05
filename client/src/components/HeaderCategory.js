@@ -30,11 +30,12 @@ const HeaderCategory = (props) => {
     const handleShow = () => setShow(true)
     return (
         <>
-            <div className="row d-flex" style={{ backgroundColor: "white" }}>
-                <Button variant="outline-dark" className="col-md-2 col-10 d-flex align-items-center justify-content-center" onClick={handleShow}>
-                    <span className="material-icons-outlined">
-                        add
-                    </span>
+            <div className="row d-flex" style={{ backgroundColor: "white", }}>
+                <Button variant="outline-info" className="col d-flex align-items-center justify-content-center" onClick={handleShow}>
+                    <img alt="error" src={`${window.location.origin}/icon/icons8-create-48.png`}/>
+                </Button>
+                <Button variant="outline-info" className="col d-flex align-items-center justify-content-center" onClick={handleShow}>
+                    <img alt="error" src={`${window.location.origin}/icon/icons8-microsoft-word-2019-48.png`}/>
                 </Button>
             </div>
             <Modal
