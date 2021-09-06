@@ -56,9 +56,7 @@ function App(props) {
                         <HeaderMobile/>
                     </Row>
                     <Row style={{ flex: "1", overflow: "hidden" }}>
-                      <Col md={3} className="d-none d-md-block">
                         <NavBody infoUser={props.loginState.info} style={{ height: "100%", width: "100%" }} />
-                      </Col>
                       <Col style={{height: "100%", display: "flex", flexDirection: "column" }}>
                         <Switch>
                           <Route path="/edit/:id">

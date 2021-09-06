@@ -1,6 +1,7 @@
 const defaultReducer = {
     toastMsg: null,
-    openNavBody: false
+    openNavBody: false,
+    openNavBodyMd: true
 }
 
 const siteReducer = (state = defaultReducer, action) => {
@@ -28,6 +29,19 @@ const siteReducer = (state = defaultReducer, action) => {
             return {
                 ...state,
                 openNavBody: false
+            }
+        }
+        case "OpenNavBodyMd" : {
+            return {
+                ...state,
+                openNavBodyMd: true
+            }
+        }
+
+        case "CloseNavBodyMd" : {
+            return {
+                ...state,
+                openNavBodyMd: false
             }
         }
         default:

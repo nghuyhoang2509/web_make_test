@@ -229,3 +229,10 @@ export function movePositionQuestion(payload){
         payload
     }
 }
+
+export function stopPollingResponse(payload){
+    return {
+        type: "StopPollingResponse",
+        payload
+    }
+}

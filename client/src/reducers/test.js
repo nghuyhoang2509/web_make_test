@@ -143,7 +143,8 @@ const testReducer = (state = defaultReducer, action) => {
         }
         case "UpdateTestRequest": {
             return {
-                ...state
+                ...state,
+                loading: false
             }
         }
         case "UpdateTestSuccess": {
@@ -253,6 +254,12 @@ const testReducer = (state = defaultReducer, action) => {
             answers.splice(indexQuestionTo + 1, 0, ...answerMove)
             console.log(questions)
             console.log(answers)
+            return {
+                ...state
+            }
+        }
+
+        case "StopPollingResponse": {
             return {
                 ...state
             }

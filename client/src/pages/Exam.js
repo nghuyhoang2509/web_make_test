@@ -86,7 +86,7 @@ const Exam = (props) => {
                                             </h5>
                                             : <></>}
                                         <div className="exam select-none mb-0">
-                                            <div style={{ borderTop: "5px solid black", padding: "5px", borderRadius: "10px", boxShadow: "0 0 2px 1px rgba(0,0,0,0.3)" }}>
+                                            <div className="exam-header">
                                                 <h3 className="exam-title">{props.exam.title.toUpperCase()}</h3>
                                                 <p>{props.exam.description}</p>
                                             </div>

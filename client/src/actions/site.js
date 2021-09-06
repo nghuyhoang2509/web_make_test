@@ -24,3 +24,17 @@ export function closeNavBody(payload){
         payload
     }
 }
+
+export function openNavBodyMd(payload){
+    return {
+        type: "OpenNavBodyMd",
+        payload
+    }
+}
+
+export function closeNavBodyMd(payload){
+    return {
+        type: "CloseNavBodyMd",
+        payload
+    }
+}

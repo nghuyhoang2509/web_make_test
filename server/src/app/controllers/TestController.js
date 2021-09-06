@@ -12,7 +12,7 @@ class TestController {
             const user = req.body.info
             const test = await Test.find({ userId: user.id }).sort({ updatedAt: -1 })
             if (test.length === 0) {
-                return res.json({ success: true, message: "không có dữ liệu" , data: []})
+                return res.json({ success: true, message: "không có dữ liệu", data: [] })
             }
             return res.json({ success: true, message: "lấy data thành công", data: test })
         } catch (error) {
@@ -110,6 +110,10 @@ class TestController {
             }
             if (polling) {
                 /* redisDB.setex(testId, JSON.parser(res)) */
+                if (resPolling[testId]) {
+                    resPolling[testId].json({ success: true, message: "khong có dữ liệu mới", data: [] })
+                    resPolling[testId] = null
+                }
                 return resPolling[testId] = res
             }
             return res.json({ success: true, message: "lấy dữ liệu thành công", data: response })
@@ -118,6 +122,20 @@ class TestController {
             return res.json({ success: false, message: error })
         }
     }
+
+
+    //[POST] /admin/test/stoppolling
+    async stopPolling(req, res, next) {
+        try {
+            const { testId } = req.body.data
+            resPolling[testId].json({ success: true, message: "khong có dữ liệu mới", data: [] })
+            resPolling[testId] = null
+            return res.json({ success: true, message: "khong có dữ liệu mới", data: null })
+        } catch (error) {
+
+        }
+    }
+
 
     //[DELETE] /admin/test/delete
     //private

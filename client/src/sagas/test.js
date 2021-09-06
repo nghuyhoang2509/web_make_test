@@ -109,3 +109,7 @@ export function* responseTest(action) {
         yield put(getResponseSuccess(data))
     }
 }
+
+export function * stopPolling(action){
+    yield call(apiTest.stopPolling, action.payload)
+}

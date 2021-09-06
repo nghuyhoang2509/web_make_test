@@ -42,3 +42,9 @@ export function responseTest(data){
         data
     })
 }
+
+export function stopPolling(data){
+    return instance.post("/admin/test/stoppolling",{
+        data
+    })
+}

@@ -15,6 +15,8 @@ router.patch('/answer',testController.answer)
 
 router.post('/delete',testController.delete)
 
+router.post('/stoppolling',testController.stopPolling)
+
 router.post('/get',testController.test)
 
 
