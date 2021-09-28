@@ -38,3 +38,25 @@ export function closeNavBodyMd(payload){
         payload
     }
 }
+
+export function openPageProgress(payload){
+    return {
+        type: "OpenPageProgress",
+        payload
+    }
+}
+
+export function updatePageProgress(payload){
+    return {
+        type: "UpdatePageProgress",
+        payload
+    }
+}
+
+export function donePageProgress(payload){
+    return {
+        type: "DonePageProgress",
+        payload
+    }
+}
+

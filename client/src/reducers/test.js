@@ -5,7 +5,6 @@ const defaultReducer = {
     testLoaded: null,
     exam: null,
     responseAnswer: [],
-    responsePolling: false
 }
 
 const testReducer = (state = defaultReducer, action) => {
@@ -97,7 +96,7 @@ const testReducer = (state = defaultReducer, action) => {
                     questions: [...state.exam.questions, {
                         title: "Câu hỏi mới",
                         options: [],
-                        type: "radio"
+                        type: "radio",
                     }],
                 }
             }
@@ -127,6 +126,7 @@ const testReducer = (state = defaultReducer, action) => {
             state.exam.questions[action.payload.indexQuestion].title = action.payload.value
             return {
                 ...state,
+                
             }
         }
         case "UpdateAnswer": {
@@ -144,7 +144,10 @@ const testReducer = (state = defaultReducer, action) => {
         case "UpdateTestRequest": {
             return {
                 ...state,
-                loading: false
+                loading: false,
+                exam: {
+                    ...state.exam
+                }
             }
         }
         case "UpdateTestSuccess": {
@@ -153,7 +156,6 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "UpdateTestFail": {
-            alert("Đề thi không còn công khai")
             return {
                 ...state
             }
@@ -174,6 +176,7 @@ const testReducer = (state = defaultReducer, action) => {
             const { indexQuestion, index } = action.payload
             const questions = state.exam.questions
             questions[indexQuestion].options.splice(index, 1)
+            questions[indexQuestion].optionsImage.splice(index,1)
             return {
                 ...state,
                 exam: {
@@ -212,7 +215,6 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
         case "AnswerFail": {
-            alert("Nộp thất bại")
             return {
                 ...state,
                 loading: false,
@@ -228,19 +230,16 @@ const testReducer = (state = defaultReducer, action) => {
         case "GetResponseRequest": {
             return {
                 ...state,
-                responsePolling: false
             }
         }
 
         case "GetResponseSuccess": {
             return {
                 ...state,
-                responseAnswer: [...action.payload.data.data, ...state.responseAnswer],
-                responsePolling: true
+                responseAnswer: [...action.payload.data.data],
             }
         }
         case "GetResponseFail": {
-            alert('có lỗi xãy ra')
             return {
                 ...state,
             }
@@ -259,12 +258,21 @@ const testReducer = (state = defaultReducer, action) => {
             }
         }
 
-        case "StopPollingResponse": {
+        case "ConvertFileToTextRequest": {
             return {
                 ...state
             }
         }
-
+        case "ConvertFileToTextSuccess": {
+            return {
+                ...state
+            }
+        }
+        case "ConvertFileToTextFail": {
+            return {
+                ...state
+            }
+        }
         default:
             return state
     }

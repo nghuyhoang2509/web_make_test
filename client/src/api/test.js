@@ -43,8 +43,11 @@ export function responseTest(data){
     })
 }
 
-export function stopPolling(data){
-    return instance.post("/admin/test/stoppolling",{
-        data
+export function convertFileToText(data){
+    return instance.post("/admin/test/convert-file-to-text", data,{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     })
 }
+

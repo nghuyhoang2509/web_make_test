@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Row, Col, Tab, Nav, Form, Button } from "react-bootstrap";
+import { Row, Col, Tab, Nav, Form, Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { changeSetting, updateTestRequest } from '../../actions/test';
+import { toastMsgRequest } from '../../actions/site';
 import { connect } from "react-redux"
 import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars"
 
@@ -27,7 +28,7 @@ const dateTimePicker = {
     margin: "20px"
 }
 
-const Setting = ({ settings, changeSetting, updateTestRequest }) => {
+const Setting = ({ settings, changeSetting, updateTestRequest, toastMsgRequest }) => {
     const [autoMark, setAutoMark] = useState(settings.autoMark)
     const [display, setDisplay] = useState(settings.display)
     const [timeLimit, setTimeLimit] = useState(settings.displayLimit)
@@ -55,7 +56,25 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                 <i></i>
                                 <Form style={formSetting}>
                                     <Form.Group>
-                                        <Form.Label>Hiển thị</Form.Label>
+                                        <Form.Label className="d-flex align-items-center">Hiển thị
+                                            <OverlayTrigger trigger="focus" placement="right" overlay={
+                                                <Popover >
+                                                    <Popover.Header as="h3">Trợ giúp</Popover.Header>
+                                                    <Popover.Body>
+                                                        <p>
+                                                            Mở: mọi người có liên kết hoặc id đề điều có thể vào làm.
+                                                        </p>
+                                                        <p>
+                                                            Đóng: chỉ bạn mới có thể vào làm.
+                                                        </p>
+                                                        <p>
+                                                            Thời gian: chỉ có thể làm vào thời gian đã đặt
+                                                        </p>
+                                                    </Popover.Body>
+                                                </Popover>}>
+                                                <Button bsPrefix="button-help"><img alt="help" src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-help-24.png?alt=media&token=b906ec57-2bea-4fda-918e-9a8a153bebfe`} /></Button>
+                                            </OverlayTrigger>
+                                        </Form.Label>
                                         <Form.Select defaultValue={settings.display} onChange={(e) => {
                                             changeSetting({
                                                 key: "display",
@@ -63,8 +82,8 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                             })
                                             setDisplay(e.target.value)
                                         }}>
-                                            <option value="public">Công khai</option>
-                                            <option value="private">Riêng tư</option>
+                                            <option value="public">Mở</option>
+                                            <option value="private">Đóng</option>
                                             <option value="time">Cài đặt thời gian</option>
                                         </Form.Select>
                                         <Form.Group style={dateTimePicker} className={display === "time" ? "d-block" : "d-none"}>
@@ -95,7 +114,7 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                         }} />
                                     </Form.Group>
                                 </Form>
-                                <Button style={buttonSave} onClick={() => updateTestRequest()}>Lưu lại</Button>
+                                <Button className onClick={() => updateTestRequest()}>Lưu lại</Button>
                             </Tab.Pane>
                             <Tab.Pane eventKey="resAnswer">
                                 <h4>Phản hồi</h4>
@@ -175,7 +194,7 @@ const Setting = ({ settings, changeSetting, updateTestRequest }) => {
                                                     value
                                                 })
                                             } else {
-                                                alert('nhập thời gian giới hạn đúng định dạng số nguyên dương nhỏ hơn 1000')
+                                                toastMsgRequest({msg: 'Nhập thời gian giới hạn đúng định dạng số nguyên dương nhỏ hơn 1000', status: "error" }) 
                                             }
                                         }
                                         }></Form.Control>
@@ -198,4 +217,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps, { changeSetting, updateTestRequest })(Setting)
+export default connect(mapStateToProps, { changeSetting, updateTestRequest, toastMsgRequest })(Setting)

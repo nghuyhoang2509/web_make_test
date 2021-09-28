@@ -25,7 +25,6 @@ export function* login(action){
         
         if (response.data.success === true){
             yield put(loginSuccess(response.data))
-            yield put(toastMsgRequest( { msg: response.data.message, status: "success" } ))
         }else{
             yield put(toastMsgRequest( { msg: response.data.message, status: "error" } ))
             yield put(loginFail(response.data))

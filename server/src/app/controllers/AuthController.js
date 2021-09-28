@@ -59,7 +59,6 @@ class AuthController {
     //Public
     async logout(req, res, next) {
         try {
-            req.session.destroy()
             res.clearCookie("access", { path:'/' })
             res.clearCookie("refresh", { path:'/' })
             return res.json({ success: true, message: "logout thành công" })

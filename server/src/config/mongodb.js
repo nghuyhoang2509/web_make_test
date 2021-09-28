@@ -3,10 +3,10 @@ const mongoose = require('mongoose')
 async function connect(){
     try{
         await mongoose.connect(process.env.MONGODB,{
-            useCreateIndex: true,
+            /* useCreateIndex: true, */
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            useFindAndModify: false,
+            /* useFindAndModify: false, */
         })
         console.log('db success')
     }catch(error){

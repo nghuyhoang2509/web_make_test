@@ -23,7 +23,7 @@ const Header = (props) => {
                 </Col>
                 <Col className="d-flex justify-content-end">
                     <Link to="/profile" className="d-none d-md-flex" style={{ display: "flex", color: "black", alignItems: "center" }}>
-                        <img src="icon/icons8-customer-48.png" alt="error" style={{ height: "30px", width: "30px"}}/> 
+                        <img src={"https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-customer-48.png?alt=media&token=dce9fcd6-3010-4efb-9a21-29532c4dfc79"} alt="error" style={{ height: "30px", width: "30px"}}/> 
                         <h5 className="mb-0">{props.infoUser.username}</h5>
                     </Link>
                 </Col>

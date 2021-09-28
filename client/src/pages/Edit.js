@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
 import { connect } from "react-redux";
 
@@ -14,7 +14,6 @@ import {
     deleteOption,
     deleteQuestion,
     movePositionQuestion,
-    stopPollingResponse
 } from '../actions/test';
 import { toastMsgRequest } from '../actions/site';
 import { Form, Tab, Dropdown, Nav, Modal, Col, Row } from "react-bootstrap"
@@ -23,9 +22,13 @@ import Response from "../pagesprivate/test/Response"
 import Moment from "react-moment"
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton"
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import EditorContent from '../components/EditorContent';
+
 
 
 const Edit = (props) => {
+    const elementEdit = useRef(null)
+    const [modal, setModal] = useState(false)
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -41,9 +44,10 @@ const Edit = (props) => {
         }
         return () => {
             props.updateTestRequest()
-            props.stopPollingResponse({ testId: id })
+            elementEdit.current = null
         }// eslint-disable-next-line
     }, [])
+    
     return (
         <>
             {props.loading ?
@@ -74,60 +78,61 @@ const Edit = (props) => {
                                                 <div className="exam select-none">
                                                     <div className="exam-header" onBlur={() => props.updateTestRequest()}>
                                                         <i><Moment format="hh:mm:ss DD/MM/YYYY">{props.exam.createdAt}</Moment></i>
-                                                        <h3 suppressContentEditableWarning="true" className="exam-title" contentEditable="true" onBlur={(e) => props.updateExam({ title: e.target.innerText })}>{props.exam.title.toUpperCase()}</h3>
-                                                        <p suppressContentEditableWarning="true" className="exam-description" onBlur={(e) => props.updateExam({ description: e.target.innerText })} contentEditable="true">{props.exam.description ? props.exam.description : <>Chưa có mô tả</>}</p>
+                                                        <h3 suppressContentEditableWarning="true" onDoubleClick={(e) => { e.target.contentEditable = true; e.target.focus(); document.execCommand("selectall", null, false);; }} className="exam-title" onBlur={(e) => { props.updateExam({ title: e.target.innerText }); e.target.contentEditable = false }}>{props.exam.title.toUpperCase()}</h3>
+                                                        <p suppressContentEditableWarning="true" onDoubleClick={(e) => { e.target.contentEditable = true; e.target.focus(); document.execCommand("selectall", null, false);; }} className="exam-description" onBlur={(e) => { props.updateExam({ description: e.target.innerText }); e.target.contentEditable = false }}>{props.exam.description ? props.exam.description : <>Chưa có mô tả</>}</p>
                                                     </div>
                                                     <Form className="mt-4 exam-questions">
                                                         {props.exam.questions.length > 0
                                                             ?
                                                             <>
                                                                 {props.exam.questions.map((question, indexQuestion) =>
-                                                                    <Form.Group className="exam-question" key={indexQuestion} onChange={(e) => {
+                                                                    <div className="exam-question"
+                                                                        key={indexQuestion} >
+                                                                        <img onClick={(e) => { elementEdit.current = null; e.target.parentElement.classList.remove("edit"); props.updateTestRequest() }} className="edit-mode" style={{ position: "absolute", height: "30px", left: "15px", bottom: "15px" }} alt="save" src="https://img.icons8.com/color/50/000000/checkmark--v1.png" />
+                                                                        <Form.Group className="exam-question-wrapper"
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                if (!elementEdit.current && elementEdit.current !== 0) {
+                                                                                    e.currentTarget.parentElement.classList.add("edit")
+                                                                                    elementEdit.current = indexQuestion
+                                                                                } else if (elementEdit.current !== indexQuestion) {
+                                                                                    props.toastMsgRequest({ msg: "Có thành phần đang được chọn cần kết thúc để chọn thành phần khác", status: "error" })
+                                                                                }
+                                                                            }}>
+                                                                            <Form.Label style={{ width: "100%" }}><>
+                                                                                <span className="content-question-item normal-mode" dangerouslySetInnerHTML={{ __html: question.title }}></span>
+                                                                                <span className="edit-mode">
+                                                                                    <EditorContent indexQuestion={indexQuestion} index={null} dataValue={question.title}/>
+                                                                                </span>
+                                                                            </>
+                                                                            </Form.Label>
 
-                                                                        props.updateAnswer({
-                                                                            indexQuestion,
-                                                                            value: e.target.value
-                                                                        })
-                                                                        props.updateTestRequest()
-                                                                    }
-
-                                                                    }>
-                                                                        <Form.Label suppressContentEditableWarning="true" className="exam-question-title" contentEditable="true" onBlur={(e) => {
-                                                                            const value = e.target.innerText
-                                                                            props.updateQuestion({
-                                                                                indexQuestion,
-                                                                                value
-                                                                            })
-                                                                        }}> {question.title}</Form.Label>
-                                                                        {question.options.map((option, index) =>
-                                                                            <div className="d-flex align-items-center exam-question-group" key={index}>
-                                                                                <Form.Check className="exam-option me-2 mt-0" value={`${index}`} type={question.type} name={indexQuestion} defaultChecked={props.exam.answers[indexQuestion] === `${index}` ? true : false} />
-                                                                                <Form.Label suppressContentEditableWarning="true" contentEditable="true" className="flex-1 mb-0 exam-option-label"
-                                                                                    onBlur={(e) => {
-                                                                                        props.updateOption({
-                                                                                            index,
+                                                                            {question.options.map((option, index) =>
+                                                                                <div className="d-flex align-items-center exam-question-group" key={index}>
+                                                                                    <Form.Check className="exam-option me-2 mt-0" value={`${index}`} type={question.type} name={indexQuestion} defaultChecked={props.exam.answers[indexQuestion] === `${index}` ? true : false} />
+                                                                                    <Form.Label className="mb-0 exam-option-label">
+                                                                                        <span className="content-question-item normal-mode" dangerouslySetInnerHTML={{ __html: option }}></span>
+                                                                                        <span className="edit-mode">
+                                                                                            <EditorContent indexQuestion={indexQuestion} index={index} dataValue={option}/>
+                                                                                        </span>
+                                                                                    </Form.Label>
+                                                                                    <img alt="xóa" src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-delete-48.png?alt=media&token=402206e5-c994-48fc-8dfc-8dccc143c6de`} className="exam-option-delete edit-mode" onClick={() => {
+                                                                                        props.deleteOption({
                                                                                             indexQuestion,
-                                                                                            value: e.target.innerText
+                                                                                            index
                                                                                         })
                                                                                         props.updateTestRequest()
-                                                                                    }}>{option}</Form.Label>
-                                                                                <span className="material-icons-outlined exam-option-delete" onClick={() => {
-                                                                                    props.deleteOption({
-                                                                                        indexQuestion,
-                                                                                        index
-                                                                                    })
+                                                                                    }}></img>
+                                                                                </div>)}
+                                                                            <img className="mt-1 exam-add-option edit-mode" alt="thêm" src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Fadd_64px.png?alt=media&token=e3cd1da6-cf92-4a13-aeef-f5076798e3f6`} onClick={() => { props.createOption({ indexQuestion }); }}></img>
+                                                                            <div className="exam-question-tool">
+                                                                                <img alt="xóa" src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Fremove_100px.png?alt=media&token=1f06aeed-6ecf-4413-9c69-fed0940ff7a9`} className="exam-question-tool-item edit-mode" onClick={() => {
+                                                                                    props.deleteQuestion({ indexQuestion })
                                                                                     props.updateTestRequest()
-                                                                                }}>clear</span>
-                                                                            </div>)}
-                                                                        <span className="mt-1 material-icons exam-add-option" onClick={() => props.createOption({ indexQuestion })}>control_point</span>
-                                                                        <div className="exam-question-tool">
-                                                                            <span className="material-icons exam-question-tool-item" onClick={() => {
-                                                                                props.deleteQuestion({ indexQuestion })
-                                                                                props.updateTestRequest()
-                                                                            }}>delete_outlined</span>
-                                                                        </div>
-
-                                                                    </Form.Group>)}
+                                                                                }}></img>
+                                                                            </div>
+                                                                        </Form.Group>
+                                                                    </div>)}
                                                             </>
                                                             : <>Chưa tạo câu hỏi nào</>
                                                         }
@@ -135,16 +140,16 @@ const Edit = (props) => {
                                                 </div>
                                                 <div className="test-tools">
                                                     <div className="test-tools-btn" onClick={() => props.createQuestion()}>
-                                                        <img alt="error" style={{ height: "30px" }} src={`${window.location.origin}/icon/icons8-add-48.png`} />
+                                                        <img alt="error" style={{ height: "30px" }} src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-add-48.png?alt=media&token=cf5cdba6-749f-4c9a-bff0-48382873cbd2`} />
                                                         <span className="d-none d-md-block" style={{ fontWeight: "500", opacity: "0.8" }}>Thêm câu hỏi</span>
                                                     </div>
-                                                    <div className="test-tools-btn" onClick={handleShow}>
-                                                        <img alt="error" style={{ height: "30px" }} src={`${window.location.origin}/icon/icons8-link-48.png`} />
+                                                    <div className="test-tools-btn" onClick={() => { handleShow(); setModal("link") }}>
+                                                        <img alt="error" style={{ height: "30px" }} src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-link-48.png?alt=media&token=92ddf20b-1c0a-416e-9d7e-3016b8465979`} />
                                                         <span className="d-none d-md-block" style={{ fontWeight: "500", opacity: "0.8" }}>Lấy liên kết đề</span>
                                                     </div>
                                                     <Dropdown className="test-tools-btn" autoClose="outside">
                                                         <Dropdown.Toggle childBsPrefix bsPrefix="test-tools-btn-move test-tools-btn">
-                                                            <img alt="error" style={{ height: "30px" }} src={`${window.location.origin}/icon/icons8-move-48.png`} />
+                                                            <img alt="error" style={{ height: "30px" }} src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-move-48.png?alt=media&token=16c7609c-c546-4295-8129-bc25ac020d6f`} />
                                                             <span className="d-none d-md-block" style={{ fontWeight: "500", opacity: "0.8" }}>Di chuyển</span>
                                                         </Dropdown.Toggle>
                                                         <Dropdown.Menu>
@@ -188,32 +193,42 @@ const Edit = (props) => {
                                                     dialogClassName="modal-link"
                                                 >
                                                     <Modal.Header closeButton>
-                                                        <Modal.Title style={{ fontWeight: "600", opacity: "0.9" }}>Liên kết</Modal.Title>
+                                                        <Modal.Title style={{ fontWeight: "600", opacity: "0.9" }}>
+                                                            {modal === "link" ? "Liên kết" : "Thêm ảnh"}
+                                                        </Modal.Title>
                                                     </Modal.Header>
                                                     <Modal.Body>
                                                         <div>
-                                                            <div style={{ fontWeight: "600", opacity: "0.8" }}>Liên kết làm bài</div>
-                                                            <Row style={{ margin: "10px", display: "flex", alignItems: "center" }}>
-                                                                <Col xs={10} style={{ overflowX: "hidden", padding: "8px", textOverflow: "ellipsis", backgroundColor: "#f3f4f6" }}>
-                                                                    <input type="text" readOnly style={{ fontWeight: "500", width: "100%", outline: "none", border: "none", backgroundColor: "#f3f4f6" }} value={`${window.location.origin}/exam/${id}`} />
-                                                                </Col>
-                                                                <Col>
-                                                                    <CopyToClipboard onCopy={() => props.toastMsgRequest({ msg: "Đã sao chép", status: "success" })} text={`${window.location.origin}/exam/${id}`}>
-                                                                        <span style={{ fontWeight: "500", boxShadow: "0px 1px 0px 0.5px rgba(0,0,0,0.4)", padding: "5px", borderRadius: "5px", cursor: "pointer" }}>Copy</span>
-                                                                    </CopyToClipboard>
-                                                                </Col>
-                                                            </Row>
-                                                            <div style={{ fontWeight: "600", opacity: "0.8" }}>Id đề</div>
-                                                            <Row style={{ margin: "10px", display: "flex", alignItems: "center" }}>
-                                                                <Col xs={10} style={{ overflowX: "hidden", padding: "8px", textOverflow: "ellipsis", backgroundColor: "#f3f4f6" }}>
-                                                                    <input type="text" readOnly style={{ fontWeight: "500", width: "100%", outline: "none", border: "none", backgroundColor: "#f3f4f6" }} value={`${id}`} />
-                                                                </Col>
-                                                                <Col>
-                                                                    <CopyToClipboard onCopy={() => props.toastMsgRequest({ msg: "Đã sao chép", status: "success" })} text={`${id}`}>
-                                                                        <span style={{ fontWeight: "500", boxShadow: "0px 1px 0px 0.5px rgba(0,0,0,0.4)", padding: "5px", borderRadius: "5px", cursor: "pointer" }}>Copy</span>
-                                                                    </CopyToClipboard>
-                                                                </Col>
-                                                            </Row>
+                                                            {modal === "link"
+                                                                ?
+                                                                <>
+                                                                    <div style={{ fontWeight: "600", opacity: "0.8" }}>Liên kết làm bài</div>
+                                                                    <Row style={{ margin: "10px", display: "flex", alignItems: "center" }}>
+                                                                        <Col xs={10} style={{ overflowX: "hidden", padding: "8px", textOverflow: "ellipsis", backgroundColor: "#f3f4f6" }}>
+                                                                            <input type="text" readOnly style={{ fontWeight: "500", width: "100%", outline: "none", border: "none", backgroundColor: "#f3f4f6" }} value={`${window.location.origin}/exam/${id}`} />
+                                                                        </Col>
+                                                                        <Col>
+                                                                            <CopyToClipboard onCopy={() => props.toastMsgRequest({ msg: "Đã sao chép", status: "success" })} text={`${window.location.origin}/exam/${id}`}>
+                                                                                <span style={{ fontWeight: "500", boxShadow: "0px 1px 0px 0.5px rgba(0,0,0,0.4)", padding: "5px", borderRadius: "5px", cursor: "pointer" }}>Copy</span>
+                                                                            </CopyToClipboard>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <div style={{ fontWeight: "600", opacity: "0.8" }}>Id đề</div>
+                                                                    <Row style={{ margin: "10px", display: "flex", alignItems: "center" }}>
+                                                                        <Col xs={10} style={{ overflowX: "hidden", padding: "8px", textOverflow: "ellipsis", backgroundColor: "#f3f4f6" }}>
+                                                                            <input type="text" readOnly style={{ fontWeight: "500", width: "100%", outline: "none", border: "none", backgroundColor: "#f3f4f6" }} value={`${id}`} />
+                                                                        </Col>
+                                                                        <Col>
+                                                                            <CopyToClipboard onCopy={() => props.toastMsgRequest({ msg: "Đã sao chép", status: "success" })} text={`${id}`}>
+                                                                                <span style={{ fontWeight: "500", boxShadow: "0px 1px 0px 0.5px rgba(0,0,0,0.4)", padding: "5px", borderRadius: "5px", cursor: "pointer" }}>Copy</span>
+                                                                            </CopyToClipboard>
+                                                                        </Col>
+                                                                    </Row>
+                                                                </>
+                                                                :
+                                                                <>
+
+                                                                </>}
                                                         </div>
                                                     </Modal.Body>
 
@@ -259,6 +274,5 @@ export default connect(mapStateToProps,
         deleteOption,
         deleteQuestion,
         movePositionQuestion,
-        stopPollingResponse,
-        toastMsgRequest
+        toastMsgRequest,
     })(Edit)

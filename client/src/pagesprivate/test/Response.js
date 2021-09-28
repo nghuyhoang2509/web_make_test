@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { MDBDataTableV5 } from "mdbreact"
 import { connect } from "react-redux"
 import { getResponseRequest } from '../../actions/test'
 import moment from 'moment'
+import socketIO from 'socket.io-client'
+import { host } from '../../config/var'
 
-const Response = ({ responseAnswers, getResponseRequest, testId, responsePolling }) => {
+const Response = ({ responseAnswers, getResponseRequest, testId, testByUserId }) => {
     const [dataTable, setDataTable] = useState({
         columns: [
             {
@@ -27,17 +29,22 @@ const Response = ({ responseAnswers, getResponseRequest, testId, responsePolling
         ],
         rows: []
     })
+    const socketRef = useRef()
     useEffect(() => {
-        if (!responseAnswers.length) {
-            getResponseRequest({ testId })
-        }
+        getResponseRequest({ testId })
+        socketRef.current = socketIO.connect(host)
+        socketRef.current.emit("wait-response-test",{ testByUserId })
+        socketRef.current.on("have-response", function(){
+            getResponseRequest({ testId})
+        })
         return () => {
+            socketRef.current.disconnect()
         }//eslint-disable-next-line
     }, [])
     useEffect(() => {
         if (responseAnswers.length) {
             setDataTable({
-                ...dataTable, 
+                ...dataTable,
                 rows: responseAnswers.map((item) =>
                 ({
                     time: moment(item.date).format("HH:mm:ss DD-MM-YYYY"),
@@ -49,12 +56,6 @@ const Response = ({ responseAnswers, getResponseRequest, testId, responsePolling
             })
         }//eslint-disable-next-line
     }, [responseAnswers])
-    useEffect(() => {
-        if (responsePolling) {
-            getResponseRequest({ testId, polling: true })
-        }
-        //eslint-disable-next-line
-    }, [responsePolling])
     return (
         <div className="response">
             <h3 className="response-title">{responseAnswers.length} phản hồi</h3>
@@ -67,7 +68,7 @@ function mapStateToProps(state) {
     return {
         responseAnswers: state.test.responseAnswer,
         testId: state.test.exam._id,
-        responsePolling: state.test.responsePolling
+        testByUserId: state.test.exam.userId
     }
 }
 

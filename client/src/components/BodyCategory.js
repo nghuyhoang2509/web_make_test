@@ -18,9 +18,9 @@ const BodyCategory = (props) => {
     }
     
     useEffect(() => {
-        if (props.testLoaded === null) {
+        //if (props.testLoaded === null) {
             props.loadTestRequest()
-        }
+       // }
         return () => {
         }// eslint-disable-next-line
     }, [])
@@ -54,9 +54,8 @@ const BodyCategory = (props) => {
                                                     </Button>
                                                 </Link>
                                             </Card.Body>
-                                            <span className="material-icons-outlined btn-delete" onClick={() => handleShow(test._id)}>
-                                                delete
-                                            </span>
+                                            <img alt="xóa" src={`https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ftrash_48px.png?alt=media&token=e5594c61-b8c7-43df-b2cf-90ac10505824`} className="btn-delete" onClick={() => handleShow(test._id)}>
+                                            </img>
                                         </Card>
                                     </div>)}
                             </>
@@ -64,7 +63,7 @@ const BodyCategory = (props) => {
                         }
                         {props.testLoaded?.length === 0 ?
                             <div className="d-flex justify-content-center align-items-center" style={{ flexDirection: "column" }}>
-                                <img alt="error" src="icon/icons8-empty-box-64.png" />
+                                <img alt="trống" src={"https://firebasestorage.googleapis.com/v0/b/testmaker-4bf4e.appspot.com/o/icons%2Ficons8-empty-box-64.png?alt=media&token=605e145a-f95f-48f4-a382-814723d2cbc8"} />
                                 <h4 className="mt-4">Bạn chưa tạo đề nào</h4>
                             </div> : <></>}
                     </>}

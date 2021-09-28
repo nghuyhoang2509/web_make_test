@@ -14,17 +14,26 @@ import {
     answerSuccess,
     answerFail,
     getResponseSuccess,
-    getResponseFail
-} from "../actions/test"
-import { toastMsgRequest } from "../actions/site"
+    getResponseFail,  // eslint-disable-next-line
+    convertFileToTextSuccess,  // eslint-disable-next-line
+    convertFileToTextFail,
+    createTestRequest
+} from "../actions/test" // eslint-disable-next-line
+import { toastMsgRequest, openPageProgress, updatePageProgress, donePageProgress } from "../actions/site"
+
+
+import socketIO from "socket.io-client"
+import { host } from "../config/var"
 
 
 export function* createTest(action) {
     const id = yield select((state) => state.login.info.id)
+    if (!action.payload.question) {
+        action.payload.question = []
+    }
     const dataReq = {
         test: {
             ...action.payload,
-            question: []
         },
         id
     }
@@ -89,13 +98,18 @@ export function* updateTest(action) {
 }
 
 export function* answerTest(action) {
+    const socketIOClient = yield socketIO.connect(host)
     const data = yield call(apiTest.answerTest, action.payload)
     if (data.data.success === false) {
         yield put(answerFail())
         yield put(toastMsgRequest({ msg: data.data.message, status: "error" }))
+        yield socketIOClient.disconnect()
     } else {
+        const userIdForTest = yield select((state) => state.test.exam.userId)
+        yield socketIOClient.emit("send-response", { testByUserId: userIdForTest })
         yield put(answerSuccess(data))
         yield put(toastMsgRequest({ msg: data.data.message, status: "success" }))
+        yield socketIOClient.disconnect()
     }
 }
 
@@ -110,6 +124,42 @@ export function* responseTest(action) {
     }
 }
 
-export function * stopPolling(action){
-    yield call(apiTest.stopPolling, action.payload)
+
+
+
+export function* convertFileToText(action) {
+    yield put(openPageProgress())
+    const { fileTest, test } = action.payload
+    const fileForm = new FormData()
+    fileForm.append("file", fileTest.file)
+    const { data } = yield call(apiTest.convertFileToText, fileForm)
+    if (data.success) {
+        yield put(updatePageProgress({ progressValue: 30 }))
+        if (fileTest.type === "auto") {
+            var questionArray = yield data.text.split(/câu \d+[:.]/i)
+            var questions = []
+            questionArray.forEach((item) =>{ 
+                if (item.match(/\s+/) && item !== "" ){
+                    const arraySplit = item.split(/[abcd][.] /i)
+                    questions.push({
+                        title: arraySplit.shift(),
+                        options: arraySplit,
+                        type: "radio",
+                        image: null,
+                        optionsImage: []
+                    })
+                }   
+            })
+            yield put(updatePageProgress({ progressValue: 100 }))
+            yield put(donePageProgress())
+            yield put(createTestRequest({
+                ...test,
+                questions
+            }))
+        }
+    } else {
+        yield put(convertFileToTextFail())
+        yield put(donePageProgress())
+        yield put(toastMsgRequest({ msg: "Có lỗi xảy ra vui lòng thử lại", status: "error" }))
+    }
 }

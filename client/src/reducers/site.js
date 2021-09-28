@@ -1,7 +1,8 @@
 const defaultReducer = {
     toastMsg: null,
     openNavBody: false,
-    openNavBodyMd: true
+    openNavBodyMd: true,
+    progress: null
 }
 
 const siteReducer = (state = defaultReducer, action) => {
@@ -42,6 +43,25 @@ const siteReducer = (state = defaultReducer, action) => {
             return {
                 ...state,
                 openNavBodyMd: false
+            }
+        }
+        case "OpenPageProgress" : {
+            return {
+                ...state,
+                progress: 1
+            }
+        }
+
+        case "UpdatePageProgress" : {
+            return {
+                ...state,
+                progress: action.payload.progressValue
+            }
+        }
+        case "DonePageProgress" : {
+            return {
+                ...state,
+                progress: null
             }
         }
         default:

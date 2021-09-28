@@ -2,6 +2,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css"
 import "material-icons/iconfont/material-icons.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "mdbreact/dist/css/mdb.css"
+import 'react-quill/dist/quill.snow.css';
 import './App.css';
 
 import { useEffect } from "react"
@@ -18,6 +19,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import NavBody from "./components/NavBody";
 import Edit from "./pages/Edit";
 import HeaderMobile from "./components/HeaderMobile"
+import ProgressPage from "./pages/ProgressPage";
 
 
 import { verifyAuthRequest } from "./actions/login";
@@ -37,6 +39,7 @@ function App(props) {
     <>
       {props.loginState.loginLoading ? <Loading /> :
         <>
+          <ProgressPage/>
           <ToastMsg />
           <Router>
             <Switch>
@@ -57,7 +60,7 @@ function App(props) {
                     </Row>
                     <Row style={{ flex: "1", overflow: "hidden" }}>
                         <NavBody infoUser={props.loginState.info} style={{ height: "100%", width: "100%" }} />
-                      <Col style={{height: "100%", display: "flex", flexDirection: "column" }}>
+                      <Col md={9} style={{height: "100%", display: "flex", flexDirection: "column" }}>
                         <Switch>
                           <Route path="/edit/:id">
                             <Edit />
@@ -80,7 +83,9 @@ function App(props) {
 }
 
 function mapStateToProps(state) {
-  return { loginState: state.login }
+  return { 
+    loginState: state.login,
+  }
 }
 
 

@@ -1,8 +1,9 @@
 const Test = require("../../model/Test")
 const User = require("../../model/User")
 const Answer = require("../../model/Answer")
-/* const redisDB = require("../../config/redisDB") */
-var resPolling = {}
+const mammoth = require("mammoth");
+const wmf2png = require("wmf2png")
+
 class TestController {
 
     //[POST] /admin/test/category/
@@ -41,6 +42,46 @@ class TestController {
         }
         catch (error) {
             return res.json({ success: false, message: error })
+        }
+    }
+
+
+    async convertFileToText(req, res, next) {
+        try {
+            const options = {
+                styleMap: [
+                    "b => ",
+                    "i => ",
+                    "u => ",
+                    "strike => ",
+                    "comment-reference => ",
+                    "p => "
+                ],
+                convertImage: mammoth.images.imgElement(async function (image) {
+                    var imageBuffer = await image.read("base64")
+                    if (image.contentType !== "image/png" && image.contentType !== "image/jpeg") {
+                        const buf = Buffer.from(imageBuffer, "base64")
+                        const wmfToPng = new Promise((resolve, reject) => {
+                            wmf2png(buf, (err, result) => {
+                                if (!err) {
+                                    resolve(result.toString("base64"))
+                                }
+                            })
+                        })
+                        image.contentType = "image/png"
+                        imageBuffer = await wmfToPng
+                    }
+                    return  {
+                        src: "data:" + image.contentType + ";base64," + imageBuffer
+                    }
+                   
+                })
+            }
+            const result = await mammoth.convertToHtml(req.file, options)
+            return res.json({ success: true, message: "tạo dữ liệu thành công", text: result.value })
+        } catch (error) {
+            console.log(error)
+            return res.json({ success: false, message: "tạo dữ liệu thất bại", data: error })
         }
     }
 
@@ -94,8 +135,9 @@ class TestController {
 
     async response(req, res, next) {
         try {
-            const { testId, userId, polling } = req.body.data
-            var answer = await Answer.findOne({ testId })
+            const { testId, userId } = req.body.data
+            var answer = null
+            answer = await Answer.findOne({ testId })
             var response = []
             if (answer) {
                 if (userId) {
@@ -108,34 +150,11 @@ class TestController {
                     response = answer.answers
                 }
             }
-            if (polling) {
-                /* redisDB.setex(testId, JSON.parser(res)) */
-                if (resPolling[testId]) {
-                    resPolling[testId].json({ success: true, message: "khong có dữ liệu mới", data: [] })
-                    resPolling[testId] = null
-                }
-                return resPolling[testId] = res
-            }
             return res.json({ success: true, message: "lấy dữ liệu thành công", data: response })
         } catch (error) {
-            console.log(error)
             return res.json({ success: false, message: error })
         }
     }
-
-
-    //[POST] /admin/test/stoppolling
-    async stopPolling(req, res, next) {
-        try {
-            const { testId } = req.body.data
-            resPolling[testId].json({ success: true, message: "khong có dữ liệu mới", data: [] })
-            resPolling[testId] = null
-            return res.json({ success: true, message: "khong có dữ liệu mới", data: null })
-        } catch (error) {
-
-        }
-    }
-
 
     //[DELETE] /admin/test/delete
     //private
@@ -152,7 +171,6 @@ class TestController {
     //[PATCH] /admin/test/answer 
     async answer(req, res, next) {
         try {
-            var response
             const { info, answer, testId, startTime, finishTime } = req.body
             const data = await Answer.findOne({ testId }).populate('testId', ['settings', 'answers'])
             data.answers.unshift({
@@ -183,20 +201,12 @@ class TestController {
             }
             if (display === "public") {
                 await data.save()
-                if (resPolling[testId]) {
-                    resPolling[testId].json({ success: true, message: "Nộp thành công", data: [data.answers[0]] })
-                    resPolling[testId] = null
-                }
                 return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
             }
             if (display === "time") {
                 const displayLimitNew = [new Date(displayLimit[0]), new Date(displayLimit[1])]
                 if (displayLimitNew[0].getTime() <= Date.now() && displayLimitNew[1].getTime() >= Date.now()) {
                     await data.save()
-                    if (resPolling[testId]) {
-                        resPolling[testId].json({ success: true, message: "Nộp thành công", data: [data.answers[0]] })
-                        resPolling[testId] = null
-                    }
                     return res.json({ success: true, message: "Nộp thành công", data: data.answers[0] })
                 } else {
                     return res.json({ success: false, message: "Thời hạn nộp bài đã hết" })

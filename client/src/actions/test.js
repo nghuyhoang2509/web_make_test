@@ -230,9 +230,24 @@ export function movePositionQuestion(payload){
     }
 }
 
-export function stopPollingResponse(payload){
+export function convertFileToTextRequest(payload){
     return {
-        type: "StopPollingResponse",
+        type: "ConvertFileToTextRequest",
         payload
     }
 }
+
+export function convertFileToTextSuccess(payload){
+    return {
+        type: "ConvertFileToTextSuccess",
+        payload
+    }
+}
+
+export function convertFileToTextFail(payload){
+    return {
+        type: "ConvertFileToTextFail",
+        payload
+    }
+}
+
